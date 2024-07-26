@@ -1,7 +1,7 @@
 // Import required modules and components
 import express from 'express';
 import cors from 'cors';
-import testing from './routes/testing.mjs'; 
+import testing from './routes/member.mjs'; 
 
 // Define the port number
 const PORT = process.env.PORT || 5050;
