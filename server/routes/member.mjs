@@ -32,6 +32,7 @@ router.get("/", async (req, res) => {
 });
 
 // Upload and process LinkedIn data
+//postman usage: form-data, key: files, type: file
 router.patch("/:id/upload", upload, async (req, res) => {
   try {
     let collection = await db.collection("members");
@@ -63,6 +64,19 @@ router.patch("/:id/upload", upload, async (req, res) => {
 });
 
 // update/add new user details
+/*
+postman usage: {
+    "field": "Positions",
+    "details": {
+      "Company Name": "New Company",
+      "Title": "New Title",
+      "Description": "New Description",
+      "Location": "New Location",
+      "Started On": "Jul 2024",
+      "Finished On": null
+    }
+}
+*/
 router.patch("/:id/update", async (req, res) => {
   try {
     let collection = await db.collection("members");
@@ -96,6 +110,16 @@ router.patch("/:id/update", async (req, res) => {
 });
 
 // update/remove user details
+
+/*
+Postman
+{
+    "field": "Positions",
+    "details": {
+        "Company Name": "New Company"
+    }
+}
+*/
 router.patch("/:id/remove", async (req, res) => {
   try {
     let collection = await db.collection("members");
