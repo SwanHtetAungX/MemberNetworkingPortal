@@ -7,7 +7,7 @@ import Papa from "papaparse";
 const router = express.Router();
 
 const storage = multer.memoryStorage();
-const upload = multer({ storage });
+const upload = multer({ storage }).array("files");
 
 //function to convert csv to json
 const convertCSVtoJSON = async (csvBuffer) => {
@@ -32,25 +32,26 @@ router.get("/", async (req, res) => {
 });
 
 // Upload and process LinkedIn data
-router.patch("/:id/upload", upload.single("file"), async (req, res) => {
+router.patch("/:id/upload", upload, async (req, res) => {
   try {
     let collection = await db.collection("members");
     const query = { _id: new ObjectId(req.params.id) };
 
     // Check if file uploaded
-    if (!req.file) {
+    if (!req.files) {
       return res.status(400).send("No file uploaded");
     }
 
+    const update = { $set: {} };
     // Convert CSV file to JSON
-    const jsonData = await convertCSVtoJSON(req.file.buffer);
-    const field = req.file.originalname.split(".")[0];
+    // loop for multiple files
+    for (const file of req.files) {
+      const jsonData = await convertCSVtoJSON(file.buffer);
+      const field = file.originalname.split(".")[0];
 
-    const update = {
-      $set: {
-        [field]: jsonData,
-      },
-    };
+      // Set the field with the JSON data
+      update.$set[field] = jsonData;
+    }
 
     let result = await collection.updateOne(query, update);
 
