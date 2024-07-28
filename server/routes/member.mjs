@@ -61,4 +61,60 @@ router.patch("/:id/upload", upload.single("file"), async (req, res) => {
   }
 });
 
+// update/add new user details
+router.patch("/:id/update", async (req, res) => {
+  try {
+    let collection = await db.collection("members");
+    const query = { _id: new ObjectId(req.params.id) };
+
+    const { field, details } = req.body;
+
+    if (field === "Password" || "ProfilePic") {
+      const update = {
+        $set: {
+          [field]: details,
+        },
+      };
+      let result = await collection.updateOne(query, update);
+
+      res.status(200).send(result);
+    } else {
+      const update = {
+        $push: {
+          [field]: details,
+        },
+      };
+      let result = await collection.updateOne(query, update);
+
+      res.status(200).send(result);
+    }
+  } catch (error) {
+    console.error("Error updating user details:", error);
+    res.status(500).send("Internal Server Error");
+  }
+});
+
+// update/remove user details
+router.patch("/:id/remove", async (req, res) => {
+  try {
+    let collection = await db.collection("members");
+    const query = { _id: new ObjectId(req.params.id) };
+
+    const { field, details } = req.body;
+
+    const update = {
+      $pull: {
+        [field]: details,
+      },
+    };
+
+    let result = await collection.updateOne(query, update);
+
+    res.status(200).send(result);
+  } catch (error) {
+    console.error("Error removing item:", error);
+    res.status(500).send("Internal Server Error");
+  }
+});
+
 export default router;
