@@ -1,5 +1,6 @@
 import express from "express";
 import db from "../db/conn.mjs";
+import { ObjectId } from "mongodb";
 
 const router = express.Router();
 
@@ -72,4 +73,37 @@ router.delete("/:id", async (req, res) => {
   }
 });
 
+router.get("/suggestions/:id", async (req, res) => {
+  try {
+    let collection = await db.collection("members");
+    const userId = req.params.id;
+    const user = await collection.findOne({ _id: new ObjectId(userId) });
+
+    if (!user) {
+      return res.status(404).send("User not found");
+    }
+
+    const { Education, Certifications, Positions } = user;
+    const criteria = { Education, Certifications, Positions };
+    const projection = { _id: 1, FirstName: 1, LastName: 1, ProfilePic: 1 };
+
+    let suggestions = await collection
+      .find({
+        $or: [
+          { Education: { $in: criteria.Education } },
+          { Certifications: { $in: criteria.Certifications } },
+          { Positions: { $in: criteria.Positions } },
+        ],
+        _id: { $ne: new ObjectId(userId) },
+      })
+      .project(projection)
+      .limit(8)
+      .toArray();
+
+    res.status(200).send(suggestions);
+  } catch (error) {
+    console.error("Error fetching recommendations:", error);
+    res.status(500).send("Internal Server Error");
+  }
+});
 export default router;
