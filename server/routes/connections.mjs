@@ -79,10 +79,6 @@ router.get("/suggestions/:id", async (req, res) => {
     const userId = req.params.id;
     const user = await collection.findOne({ _id: new ObjectId(userId) });
 
-    if (!user) {
-      return res.status(404).send("User not found");
-    }
-
     const { Education, Certifications, Positions } = user;
     const criteria = { Education, Certifications, Positions };
     const projection = { _id: 1, FirstName: 1, LastName: 1, ProfilePic: 1 };
@@ -102,7 +98,7 @@ router.get("/suggestions/:id", async (req, res) => {
 
     res.status(200).send(suggestions);
   } catch (error) {
-    console.error("Error fetching recommendations:", error);
+    console.log("Error fetching recommendations:", error);
     res.status(500).send("Internal Server Error");
   }
 });
