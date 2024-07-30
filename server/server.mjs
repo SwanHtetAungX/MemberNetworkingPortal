@@ -1,7 +1,7 @@
 // Import required modules and components
 import express from "express";
 import cors from "cors";
-import testing from "./routes/member.mjs";
+import members from "./routes/member.mjs";
 import connection from "./routes/connections.mjs"; 
 
 // Define the port number
@@ -17,9 +17,8 @@ app.use(cors());
 app.use(express.json());
 
 // Use the '/members' route module for handling member-related requests
-app.use("/testing", testing);
-app.use("/connection", connection); // Make sure this route is used as added from Backend-Functions-Xiliang
-
+app.use("/members", members);
+app.use("/connection", connection);
 // Start the server and listen on the port
 app.listen(PORT, () => {
   console.log(`Server is running on port: http://localhost:${PORT}`);
