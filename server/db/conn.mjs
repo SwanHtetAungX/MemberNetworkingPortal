@@ -20,7 +20,7 @@ try {
 }
 
 
-let db = conn.db('sample_mflix');
+let db = conn.db('member-networking-portal');
 
 // Export the MongoDB database 
 export default db;
