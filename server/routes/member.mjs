@@ -238,7 +238,7 @@ router.patch("/:id/update", async (req, res) => {
 
     const { field, details } = req.body;
 
-    if (field === "Password" || "ProfilePic") {
+    if (field === "Password" || field === "ProfilePic") {
       const update = {
         $set: {
           [field]: details,
