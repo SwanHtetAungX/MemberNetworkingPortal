@@ -1,0 +1,13 @@
+.ant-card {
+    background-color: #F9FBFF; /* Replace with your desired color */
+  }
+
+.ant-layout{
+    background-color: white;
+
+}
+
+
+.ant-typography.title2, .ant-typography.title3, .ant-typography.title4, .ant-typography.paragraph, .ant-list, .ant-btn-icon {
+    color:#372554
+}
