@@ -1,12 +1,37 @@
 import express from "express";
 import db from "../db/conn.mjs";
-
+import nodemailer from 'nodemailer';
+import { ObjectId } from "mongodb";
 const router = express.Router();
 
 const formatDate = (date) => {
   return date.toISOString().split("T")[0];
 };
 
+
+const transporter = nodemailer.createTransport({
+  service: 'gmail', 
+  auth: {
+    user: 'membernetworkingportal@gmail.com',
+    pass: 'fklb cbjd ebxd wbfz'
+  }
+});
+const sendEmail = (to, subject, text) => {
+  const mailOptions = {
+    from : 'membernetworkingportal@gmail.com',
+    to,
+    subject,
+    text
+  };
+
+  transporter.sendMail(mailOptions, (error, info) => {
+    if (error) {
+      console.log('Error sending email:', error);
+    } else {
+      console.log('Email send:', info.response);
+    }
+  })
+}
 //get connections requests
 router.get("/:id", async (req, res) => {
   try {
@@ -29,7 +54,26 @@ router.post("/", async (req, res) => {
     };
 
     let collection = await db.collection("connections");
+    let notificationCollection = await db.collection('notifications');
+
     await collection.insertOne(newConnection);
+
+    //Create notification for the recipient
+    let notification = {
+      userID: req.body.userID2,
+      type:"request",
+      message: `User ${req.body.userID1} has sent you a connection request.`,
+      createdAt: new Date()
+    };
+    await notificationCollection.insertOne(notification);
+    
+    //Send email notification
+    const user = await db.collection("members").findOne({ _id: new ObjectId(req.body.userID2) });
+    const userEmail = user.Email;
+
+    sendEmail(userEmail, "Connection Request",`${req.body.userID1} has sent you a connection request.` )
+
+
     res.status(201).send("Request Sent");
   } catch (error) {
     console.log("Error creating connection:", error);
@@ -41,6 +85,7 @@ router.post("/", async (req, res) => {
 router.patch("/:id", async (req, res) => {
   try {
     let collection = await db.collection("connections");
+    let notificationCollection = await db.collection('notifications');
     const query = { userID1: req.body.userID1, userID2: req.params.id };
 
     const update = {
@@ -51,6 +96,20 @@ router.patch("/:id", async (req, res) => {
     };
 
     let result = await collection.updateOne(query, update);
+
+    //Create notification for the requester
+    let newNotification = {
+      userID:req.body.userID1,
+      type:"Accept",
+      message: `${req.params.id} has accepted your connection request.`,
+      createdAt: new Date()
+    };
+
+    await notificationCollection.insertOne(newNotification);
+
+    const user = await db.collection("members").findOne({ _id: new ObjectId(req.body.userID1) });
+    const userEmail = user.Email;
+    sendEmail(userEmail, "Connection Accepted", `${req.params.id} has accepted your connection request.`)
     res.status(200).send(result);
   } catch (error) {
     console.log("Error processing upload:", error);
@@ -62,14 +121,67 @@ router.patch("/:id", async (req, res) => {
 router.delete("/:id", async (req, res) => {
   try {
     const collection = await db.collection("connections");
+    const notificationCollection = await db.collection('notifications');
     const query = { userID1: req.body.userID1, userID2: req.params.id };
 
     let result = await collection.deleteOne(query);
+
+    let newNotification = {
+      userID: req.body.userID1,
+      type: "Reject",
+      message: `${req.params.id} has declined your connection request.`,
+      createdAt: new Date(),
+    };
+
+    await notificationCollection.insertOne(newNotification);
+    
+    // Send email notification
+    const user = await db.collection("members").findOne({ _id: new ObjectId(req.body.userID1) });
+    const userEmail = user.Email;
+    sendEmail(userEmail, "Connection Declined", `${req.params.id} has declined your connection request.`);
+
     res.status(200).send(result);
   } catch (error) {
     console.log("Error processing upload:", error);
     res.status(500).send("Internal Server Error");
   }
 });
+
+//get connections for a user
+router.get("/connections/:id", async (req, res) => {
+  try {
+    let collection = await db.collection("connections");
+
+    // Fetch connections where the provided user ID is either userID1 or userID2 and the status is "Accept"
+    let results = await collection.find({
+      $or: [{ userID1: req.params.id }, { userID2: req.params.id }],
+      status: "Accept"
+    }).toArray();
+
+    // Format the response to send only relevant data
+    const formattedResults = results.map(conn => ({
+      connectedUserID: conn.userID1 === req.params.id ? conn.userID2 : conn.userID1
+    }));
+
+    res.status(200).send(formattedResults);
+  } catch (error) {
+    console.log("Error fetching accepted connections:", error);
+    res.status(500).send("Internal Server Error");
+  }
+});
+
+//get notifications for a user
+router.get("/notifications/:id", async (req, res) => {
+  try {
+    let notificationCollection = await db.collection('notifications');
+    let notifications = await notificationCollection.find({ userID: req.params.id }).toArray();
+    res.status(200).send(notifications);
+  } catch (error) {
+    console.log("Error fetching notifications:", error);
+    res.status(500).send("Internal Server Error");
+  }
+});
+
+
 
 export default router;
