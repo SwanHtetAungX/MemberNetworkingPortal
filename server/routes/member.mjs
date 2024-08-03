@@ -238,24 +238,27 @@ router.patch("/:id/update", async (req, res) => {
 
     const { field, details } = req.body;
 
-    if (field === "Password" || field === "ProfilePic") {
-      const update = {
+    const setFields = ["Password", "ProfilePic", "JobTitle", "Department", "Location", "Bio"];
+
+    let update;
+    if (setFields.includes(field)) {
+      update = {
         $set: {
           [field]: details,
         },
       };
-      let result = await collection.updateOne(query, update);
-
-      res.status(200).send(result);
     } else {
-      const update = {
+      
+      update = {
         $push: {
           [field]: details,
         },
       };
-      let result = await collection.updateOne(query, update);
+    }
 
-      res.status(200).send(result);
+    let result = await collection.updateOne(query, update);
+
+    res.status(200).send(result);
     }
   } catch (error) {
     console.error("Error updating user details:", error);
