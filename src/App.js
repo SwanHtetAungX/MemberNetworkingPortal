@@ -6,7 +6,7 @@ function App() {
   return (
     <div>
       <Routes>
-        <Route path="/profilePage" element={<ProfilePage />} />
+        <Route path="/profilePage/:id" element={<ProfilePage />} />
       </Routes>
     </div>
   );

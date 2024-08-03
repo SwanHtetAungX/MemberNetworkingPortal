@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
 import {
   Layout,
   Avatar,
@@ -9,6 +10,7 @@ import {
   Button,
   Typography,
   List,
+  Dropdown,
 } from "antd";
 import {
   EditFilled,
@@ -24,6 +26,44 @@ const { Header, Content } = Layout;
 const { Title, Paragraph } = Typography;
 
 const ProfilePage = () => {
+  const { id } = useParams();
+  const [profileData, setProfileData] = useState(null);
+  const items = [
+    {
+      key: "1",
+      label: (
+        <a
+          target="_blank"
+          rel="noopener noreferrer"
+          href="https://www.antgroup.com"
+        >
+          Upload Linkedin Data
+        </a>
+      ),
+    },
+  ];
+
+  useEffect(() => {
+    const fetchProfileData = async () => {
+      try {
+        const response = await fetch(`http://localhost:5050/members/${id}`);
+        if (!response.ok) {
+          throw new Error(`Error: ${response.statusText}`);
+        }
+        const data = await response.json();
+        setProfileData(data);
+      } catch (error) {
+        console.error("Error fetching profile data:", error);
+      }
+    };
+
+    fetchProfileData();
+  }, [id]);
+
+  if (!profileData) {
+    return <div>Loading...</div>;
+  }
+
   return (
     <Layout>
       <Header style={{ backgroundColor: "white", padding: "0 50px" }}>
@@ -49,13 +89,20 @@ const ProfilePage = () => {
         <Card style={{ marginTop: "20px" }}>
           <Row justify="space-between" align="middle">
             <Avatar size={64} icon={<img alt="profile" />} />
-            <Button type="text" icon={<MoreOutlined />}></Button>
+            <Dropdown
+              menu={{
+                items,
+              }}
+              placement="bottomRight"
+              arrow
+            >
+              <Button type="text" icon={<MoreOutlined />}></Button>
+            </Dropdown>
           </Row>
-
           <Title className="title3" level={3}>
             {profileData.FirstName + " " + profileData.LastName}
           </Title>
-          <Paragraph className="paragraph">{profileData.role}</Paragraph>
+          <Paragraph className="paragraph">{profileData.JobTitle}</Paragraph>
         </Card>
 
         <Card style={{ marginTop: "20px" }}>
@@ -72,7 +119,7 @@ const ProfilePage = () => {
               </Row>
             </Col>
           </Row>
-          <Paragraph className="paragraph">{profileData.about}</Paragraph>
+          <Paragraph className="paragraph">{profileData.Bio}</Paragraph>
         </Card>
 
         <Card style={{ marginTop: "20px" }}>
@@ -89,10 +136,11 @@ const ProfilePage = () => {
               </Row>
             </Col>
           </Row>
-
           <List
             dataSource={profileData.Skills}
-            renderItem={(item) => <List.Item>{item}</List.Item>}
+            renderItem={(item) => (
+              <List.Item className="listItem">{item.Name}</List.Item>
+            )}
           />
         </Card>
 
@@ -110,6 +158,16 @@ const ProfilePage = () => {
               </Row>
             </Col>
           </Row>
+          <List
+            dataSource={profileData.Positions}
+            renderItem={(position) => (
+              <List.Item className="listItem">
+                {position["Company Name"]}, {position.Title} (
+                {position["Started On"]} -{" "}
+                {position["Finished On"] || "Present"})
+              </List.Item>
+            )}
+          />
         </Card>
 
         <Card style={{ marginTop: "20px" }}>
@@ -127,11 +185,13 @@ const ProfilePage = () => {
             </Col>
           </Row>
           <List
-            dataSource={profileData.Education.map(
-              (edu) =>
-                `${edu["School Name"]}, ${edu["Degree Name"]} (${edu["Start Date"]} - ${edu["End Date"]})`
+            dataSource={profileData.Education}
+            renderItem={(edu) => (
+              <List.Item className="listItem">
+                {edu["School Name"]}, {edu["Degree Name"]} ({edu["Start Date"]}{" "}
+                - {edu["End Date"]})
+              </List.Item>
             )}
-            renderItem={(item) => <List.Item>{item}</List.Item>}
           />
         </Card>
 
@@ -150,128 +210,17 @@ const ProfilePage = () => {
             </Col>
           </Row>
           <List
-            dataSource={profileData.Certifications.map(
-              (cert) =>
-                `${cert.Name}, ${cert.Authority} (${cert["Started On"]})`
+            dataSource={profileData.Certifications}
+            renderItem={(cert) => (
+              <List.Item className="listItem">
+                {cert.Name}, {cert.Authority} ({cert["Started On"]})
+              </List.Item>
             )}
-            renderItem={(item) => <List.Item>{item}</List.Item>}
           />
         </Card>
       </Content>
     </Layout>
   );
-};
-
-const profileData = {
-  _id: {
-    $oid: "66a35c5377cfb437d4cc7e15",
-  },
-  Email: "user3@example.com",
-  Password: "dog",
-  about:
-    "The first known use of “John Doe” dates back to the 16th century,\
-     but its use became common in 18th century in British legal terminology for a fictitious plaintiff",
-  FirstName: "Alice",
-  LastName: "Johanson",
-  ProfilePic: "www.example.com",
-  Skills: "",
-  Experience: "",
-  Education: [
-    {
-      "School Name": "Temasek Polytechnic",
-      "Start Date": 2022,
-      "End Date": 2025,
-      Notes: null,
-      "Degree Name": "Common ict",
-      Activities: null,
-    },
-    {
-      "School Name": "Damai Secondary School",
-      "Start Date": "Jan 2018",
-      "End Date": "Nov 2021",
-      Notes: null,
-      "Degree Name": "O levels",
-      Activities: null,
-    },
-  ],
-  LinkedInData: "",
-  Contact: "",
-  Certifications: [
-    {
-      Name: "Python Quick Start",
-      Url: "https://www.linkedin.com/learning/certificates/98e645c2b910659189c92067e3edd09e34ca41df38da603810bf5d07aae31000",
-      Authority: "LinkedIn",
-      "Started On": "Nov 2022",
-      "Finished On": null,
-      "License Number": null,
-    },
-    {
-      Name: "Windows 10: Security",
-      Url: "https://www.linkedin.com/learning/certificates/37df7c8402b374b5c4c2d7edd074ac809b58a8feb99a6cb647ff25945ee0d773",
-      Authority: "LinkedIn",
-      "Started On": "Jan 2023",
-      "Finished On": null,
-      "License Number": null,
-    },
-    {
-      Name: "NDG Linux Unhatched English 1221a ",
-      Url: null,
-      Authority: "Cisco Networking Academy",
-      "Started On": "Jan 2023",
-      "Finished On": null,
-      "License Number": null,
-    },
-    {
-      Name: "AWS Certified Cloud Practitioner (CLF-C01) Cert Prep: 1 Cloud Concepts",
-      Url: "https://www.linkedin.com/learning/certificates/e85d2802a2f03459410b222125a37a3efc28e126e43474980bbfd8c7194356fa",
-      Authority: "LinkedIn",
-      "Started On": "Apr 2023",
-      "Finished On": null,
-      "License Number": null,
-    },
-    {
-      Name: "JavaScript Essential Training",
-      Url: "https://www.linkedin.com/learning/certificates/1d73a2a9df8a59bf6c3f7d142ceb359dfc9636988ba63a394d9c933fd810a490",
-      Authority: "LinkedIn",
-      "Started On": "Oct 2022",
-      "Finished On": null,
-      "License Number": null,
-    },
-    {
-      Name: "HTML Essential Training",
-      Url: "https://www.linkedin.com/learning/certificates/c6102bdbdec8df536c3e95dd42520162a2b980f0b142583cfb0d03b04b950fcd",
-      Authority: "LinkedIn",
-      "Started On": "Oct 2022",
-      "Finished On": null,
-      "License Number": null,
-    },
-    {
-      Name: "MySQL Essential Training (2019)",
-      Url: "https://www.linkedin.com/learning/certificates/d018da955e13f4feeb089ae2a383ed075a9752d67be6a307ab1369fee42bfc7d",
-      Authority: "LinkedIn",
-      "Started On": "Oct 2022",
-      "Finished On": null,
-      "License Number": null,
-    },
-    {
-      Name: "Node.js Essential Training",
-      Url: "https://www.linkedin.com/learning/certificates/3d321d6ed84ff5f244ea1cded8b96e2accf03bbd3b6549798d4b0f17aaa747fc",
-      Authority: "LinkedIn",
-      "Started On": "Oct 2022",
-      "Finished On": null,
-      "License Number":
-        "94a45469e0b6c51c53eb811f635b4b1bcf3b0842d70c0483ab5628869a2496a5",
-    },
-  ],
-  Positions: {
-    "Company Name": "New Company",
-    Title: "New Title",
-    Description: "New Description",
-    Location: "New Location",
-    "Started On": "Jul 2024",
-    "Finished On": null,
-  },
-  status: "Approved",
 };
 
 export default ProfilePage;

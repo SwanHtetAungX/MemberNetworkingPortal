@@ -5,7 +5,6 @@ import { ObjectId } from "mongodb";
 import Papa from "papaparse";
 import nodemailer from "nodemailer";
 
-
 const router = express.Router();
 
 const storage = multer.memoryStorage();
@@ -26,21 +25,20 @@ const convertCSVtoJSON = async (csvBuffer) => {
     throw error;
   }
 };
- 
 
 // Set up email transporter
 const transporter = nodemailer.createTransport({
-  service: 'gmail', 
+  service: "gmail",
   auth: {
-    user: 'membernetworkingportal@gmail.com',
-    pass: 'fklb cbjd ebxd wbfz'
-  }
+    user: "membernetworkingportal@gmail.com",
+    pass: "fklb cbjd ebxd wbfz",
+  },
 });
 
 // Function to send emails
 const sendEmail = async (email, subject, text) => {
   const mailOptions = {
-    from: 'membernetworkingportal@gmail.com',
+    from: "membernetworkingportal@gmail.com",
     to: email,
     subject: subject,
     text: text,
@@ -49,10 +47,9 @@ const sendEmail = async (email, subject, text) => {
   try {
     await transporter.sendMail(mailOptions);
   } catch (error) {
-    console.error('Error sending email:', error);
+    console.error("Error sending email:", error);
   }
 };
-
 
 //Route: To get all members
 router.get("/", async (req, res) => {
@@ -83,53 +80,56 @@ router.get("/suspended", async (req, res) => {
   }
 });
 
-
 //Route: Fetch a specific member by ID
-router.get("/:id", async (req , res) => {
+router.get("/:id", async (req, res) => {
   let collection = await db.collection("members");
-  let query = {_id: new ObjectId(req.params.id)};
+  let query = { _id: new ObjectId(req.params.id) };
   let result = await collection.findOne(query);
   res.send(result).status(200);
 });
 
-
-
 //Route: Reject the member / Delete user account
 router.delete("/:id", async (req, res) => {
-  const query = { _id: new ObjectId(req.params.id)};
+  const query = { _id: new ObjectId(req.params.id) };
 
   const collection = db.collection("members");
   const user = await collection.findOne({ _id: new ObjectId(req.params.id) });
 
   let result = await collection.deleteOne(query);
   if (result.deletedCount === 1) {
-    sendEmail(user.Email, "Account Status", "Your account has been rejected and deleted.");
+    sendEmail(
+      user.Email,
+      "Account Status",
+      "Your account has been rejected and deleted."
+    );
   }
 
   res.send(result).status(200);
 });
 
 //Route: Approve the member by admin
-router.patch("/:id/approve", async (req, res) =>{
+router.patch("/:id/approve", async (req, res) => {
   let collection = await db.collection("members");
 
   const query = { _id: new ObjectId(req.params.id) };
   const update = { $set: { status: "Approved" } };
-  let result = await collection.updateOne(query, update)
+  let result = await collection.updateOne(query, update);
   if (result.modifiedCount === 1) {
     const user = await collection.findOne(query);
-    sendEmail(user.Email, "Account Status", "Congratulations! Your account has been approved.");
+    sendEmail(
+      user.Email,
+      "Account Status",
+      "Congratulations! Your account has been approved."
+    );
   }
 
   res.send(result).status(200);
-
-
 });
 //Route: Suspend member by Admin
-router.patch("/:id/suspend", async (req, res) =>{
+router.patch("/:id/suspend", async (req, res) => {
   let collection = await db.collection("members");
 
-  const query = { _id: new ObjectId(req.params.id)};
+  const query = { _id: new ObjectId(req.params.id) };
 
   const user = await collection.findOne(query);
 
@@ -137,7 +137,7 @@ router.patch("/:id/suspend", async (req, res) =>{
 
   const update = { $set: { status: newStatus } };
 
-  let result = await collection.updateOne(query, update)
+  let result = await collection.updateOne(query, update);
   if (result.modifiedCount === 1) {
     // Prepare the email message based on the new status
     const emailSubject = `Account Status Change Notification`;
@@ -146,44 +146,34 @@ router.patch("/:id/suspend", async (req, res) =>{
   }
 
   res.send(result).status(200);
-
 });
 
-
-
-
-
-
 // add member by admins
-router.post("/", async (req , res) => {
+router.post("/", async (req, res) => {
   let newMember = {
-  Email: req.body.email,
-  Password : req.body.password,
-  FirstName : req.body.firstName,
-  LastName : req.body.lastName,
-  ProfilePic : "", // work on this later
+    Email: req.body.email,
+    Password: req.body.password,
+    FirstName: req.body.firstName,
+    LastName: req.body.lastName,
+    ProfilePic: "", // work on this later
 
- // The remaining fields must be filled out/updated by users after the admin creates their accounts.
-  Skills : '',
-  Experience: '',
-  Education: '',
-  Certificates: '',
-  Status: "Approved",
-  LinkedInData: "",
-  Contact: ""
-
+    // The remaining fields must be filled out/updated by users after the admin creates their accounts.
+    Skills: "",
+    Experience: "",
+    Education: "",
+    Certificates: "",
+    Status: "Approved",
+    LinkedInData: "",
+    Contact: "",
   };
 
   let collection = await db.collection("members");
 
   let result = await collection.insertOne(newMember);
-  let insertedId = result.insertedId
+  let insertedId = result.insertedId;
 
-  res.send({id: insertedId}).status(200);
-
-})
-
-
+  res.send({ id: insertedId }).status(200);
+});
 
 // Upload and process LinkedIn data
 //postman usage: form-data, key: files, type: file
@@ -238,25 +228,34 @@ router.patch("/:id/update", async (req, res) => {
 
     const { field, details } = req.body;
 
-    if (field === "Password" || field === "ProfilePic") {
-      const update = {
+    const setFields = [
+      "Password",
+      "ProfilePic",
+      "JobTitle",
+      "Department",
+      "Location",
+      "Bio",
+    ];
+
+    let update;
+    if (setFields.includes(field)) {
+      update = {
         $set: {
           [field]: details,
         },
       };
-      let result = await collection.updateOne(query, update);
-
-      res.status(200).send(result);
     } else {
-      const update = {
+      // Other fields will be pushed (arrays)
+      update = {
         $push: {
           [field]: details,
         },
       };
-      let result = await collection.updateOne(query, update);
-
-      res.status(200).send(result);
     }
+
+    let result = await collection.updateOne(query, update);
+
+    res.status(200).send(result);
   } catch (error) {
     console.error("Error updating user details:", error);
     res.status(500).send("Internal Server Error");
@@ -296,17 +295,4 @@ router.patch("/:id/remove", async (req, res) => {
   }
 });
 
-
-
-
-
-
-
-
-
-
-
-
-  export default router;
-
-
+export default router;
