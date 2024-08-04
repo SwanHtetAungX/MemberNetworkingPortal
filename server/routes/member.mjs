@@ -8,7 +8,7 @@ import nodemailer from "nodemailer";
 const router = express.Router();
 
 const storage = multer.memoryStorage();
-const upload = multer({ storage }).array("files");
+const upload = multer({ storage }).array("files[]");
 
 //function to convert csv to json
 const convertCSVtoJSON = async (csvBuffer) => {
