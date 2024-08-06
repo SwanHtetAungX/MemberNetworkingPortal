@@ -1,7 +1,9 @@
 // Import required modules and components
 import express from 'express';
 import cors from 'cors';
-import testing from './routes/member.mjs'; 
+import testing from './routes/member.mjs';
+import dotenv from "dotenv";
+dotenv.config(); 
 
 // Define the port number
 const PORT = process.env.PORT || 5050;
@@ -22,6 +24,7 @@ app.use("/testing", testing);
 // Start the server and listen on the port
 app.listen(PORT, () => {
     console.log(`Server is running on port: http://localhost:${PORT}'`);
+    console.log(process.env.EMAIL_USER); 
 });
 
 // Export the Express app 
