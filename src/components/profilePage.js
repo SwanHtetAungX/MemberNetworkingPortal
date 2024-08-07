@@ -11,9 +11,6 @@ import {
   Typography,
   List,
   Dropdown,
-  Modal,
-  Upload,
-  message,
 } from "antd";
 import {
   EditFilled,
@@ -23,9 +20,10 @@ import {
   UserOutlined,
   UsergroupDeleteOutlined,
   BellOutlined,
-  UploadOutlined,
 } from "@ant-design/icons";
-const { Dragger } = Upload;
+import AddModal from "./addModal";
+import UploadModal from "./uploadModal";
+import RemoveModal from "./removeModal";
 
 const { Header, Content } = Layout;
 const { Title, Paragraph } = Typography;
@@ -34,6 +32,9 @@ const ProfilePage = () => {
   const { id } = useParams();
   const [profileData, setProfileData] = useState(null);
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
+  const [addModalOpen, setAddModalOpen] = useState(false);
+  const [removeModalOpen, setRemoveModalOpen] = useState(false);
+  const [modalContext, setModalContext] = useState("");
 
   const [fileList, setFileList] = useState([]);
   const [uploading, setUploading] = useState(false);
@@ -54,49 +55,6 @@ const ProfilePage = () => {
 
     fetchProfileData();
   }, [id]);
-
-  //Uploading of csv
-  const handleUpload = () => {
-    const formData = new FormData();
-    fileList.forEach((file) => {
-      formData.append("files[]", file);
-    });
-
-    setUploading(true);
-
-    fetch(`http://localhost:5050/members/${id}/upload`, {
-      method: "PATCH",
-      body: formData,
-    })
-      .then((res) => res.json())
-      .then(() => {
-        setFileList([]);
-        message.success("Upload successfully.");
-        setUploadModalOpen(false);
-      })
-      .catch(() => {
-        message.error("Upload failed.");
-      })
-      .finally(() => {
-        setUploading(false);
-        window.location.reload();
-      });
-  };
-
-  //Drag and drop upload options
-  const uploadProps = {
-    onRemove: (file) => {
-      const index = fileList.indexOf(file);
-      const newFileList = fileList.slice();
-      newFileList.splice(index, 1);
-      setFileList(newFileList);
-    },
-    beforeUpload: (file) => {
-      setFileList([...fileList, file]);
-      return false;
-    },
-    fileList,
-  };
 
   if (!profileData) {
     return <div>Loading...</div>;
@@ -180,8 +138,22 @@ const ProfilePage = () => {
             </Col>
             <Col>
               <Row justify="space-between" align="middle">
-                <Button type="text" icon={<EditFilled />}></Button>
-                <Button type="text" icon={<PlusOutlined />}></Button>
+                <Button
+                  type="text"
+                  icon={<EditFilled />}
+                  onClick={() => {
+                    setModalContext("Skills");
+                    setRemoveModalOpen(true);
+                  }}
+                ></Button>
+                <Button
+                  type="text"
+                  icon={<PlusOutlined />}
+                  onClick={() => {
+                    setModalContext("Skills");
+                    setAddModalOpen(true);
+                  }}
+                ></Button>
               </Row>
             </Col>
           </Row>
@@ -202,8 +174,22 @@ const ProfilePage = () => {
             </Col>
             <Col>
               <Row justify="space-between" align="middle">
-                <Button type="text" icon={<EditFilled />}></Button>
-                <Button type="text" icon={<PlusOutlined />}></Button>
+                <Button
+                  type="text"
+                  icon={<EditFilled />}
+                  onClick={() => {
+                    setModalContext("Experience");
+                    setRemoveModalOpen(true);
+                  }}
+                ></Button>
+                <Button
+                  type="text"
+                  icon={<PlusOutlined />}
+                  onClick={() => {
+                    setModalContext("Experience");
+                    setAddModalOpen(true);
+                  }}
+                ></Button>
               </Row>
             </Col>
           </Row>
@@ -228,8 +214,22 @@ const ProfilePage = () => {
             </Col>
             <Col>
               <Row justify="space-between" align="middle">
-                <Button type="text" icon={<EditFilled />}></Button>
-                <Button type="text" icon={<PlusOutlined />}></Button>
+                <Button
+                  type="text"
+                  icon={<EditFilled />}
+                  onClick={() => {
+                    setModalContext("Education");
+                    setRemoveModalOpen(true);
+                  }}
+                ></Button>
+                <Button
+                  type="text"
+                  icon={<PlusOutlined />}
+                  onClick={() => {
+                    setModalContext("Education");
+                    setAddModalOpen(true);
+                  }}
+                ></Button>
               </Row>
             </Col>
           </Row>
@@ -253,8 +253,22 @@ const ProfilePage = () => {
             </Col>
             <Col>
               <Row justify="space-between" align="middle">
-                <Button type="text" icon={<EditFilled />}></Button>
-                <Button type="text" icon={<PlusOutlined />}></Button>
+                <Button
+                  type="text"
+                  icon={<EditFilled />}
+                  onClick={() => {
+                    setModalContext("Certifications");
+                    setRemoveModalOpen(true);
+                  }}
+                ></Button>
+                <Button
+                  type="text"
+                  icon={<PlusOutlined />}
+                  onClick={() => {
+                    setModalContext("Certifications");
+                    setAddModalOpen(true);
+                  }}
+                ></Button>
               </Row>
             </Col>
           </Row>
@@ -268,37 +282,30 @@ const ProfilePage = () => {
           />
         </Card>
       </Content>
+      <RemoveModal
+        id={id}
+        modalContext={modalContext}
+        profileData={profileData}
+        removeModalOpen={removeModalOpen}
+        setRemoveModalOpen={setRemoveModalOpen}
+      />
 
-      <Modal
-        title="Upload LinkedIn Data"
-        open={uploadModalOpen}
-        onOk={handleUpload}
-        confirmLoading={uploading}
-        onCancel={() => setUploadModalOpen(false)}
-      >
-        <Title className="title4" level={4}>
-          Steps
-        </Title>
-        <Paragraph>
-          1. Click the Me icon at the top of your LinkedIn homepage. 2. Select
-          Settings & Privacy from the dropdown 3. Click the Data Privacy on
-          theleft rail. 4. Under the How LinkedIn uses your data section, click
-          Get a copy of your data. 5. Select Download larger data archive as the
-          option and Request Archive. 6. Upload here, and let us handle the
-          rest.
-        </Paragraph>
-        <Dragger {...uploadProps}>
-          <Paragraph className="ant-upload-drag-icon">
-            <UploadOutlined />
-          </Paragraph>
-          <Paragraph className="ant-upload-text">
-            Click or drag file to this area to upload
-          </Paragraph>
-          <Paragraph className="ant-upload-hint">
-            Only upload, Certifications, Educations, Positions and Skills
-          </Paragraph>
-        </Dragger>
-      </Modal>
+      <UploadModal
+        id={id}
+        uploadModalOpen={uploadModalOpen}
+        setUploadModalOpen={setUploadModalOpen}
+        fileList={fileList}
+        setUploading={setUploading}
+        uploading={uploading}
+        setFileList={setFileList}
+      />
+
+      <AddModal
+        id={id}
+        modalContext={modalContext}
+        addModalOpen={addModalOpen}
+        setAddModalOpen={setAddModalOpen}
+      />
     </Layout>
   );
 };
