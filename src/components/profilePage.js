@@ -94,7 +94,12 @@ const ProfilePage = () => {
         </Row>
       </Header>
       <Content style={{ padding: "0 50px" }}>
-        <Card style={{ marginTop: "20px" }}>
+        <Card
+          style={{
+            marginTop: "20px",
+            boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
+          }}
+        >
           <Row justify="space-between" align="middle">
             <Avatar size={64} icon={<img alt="profile" />} />
             <Dropdown
@@ -113,7 +118,12 @@ const ProfilePage = () => {
           <Paragraph className="paragraph">{profileData.JobTitle}</Paragraph>
         </Card>
 
-        <Card style={{ marginTop: "20px" }}>
+        <Card
+          style={{
+            marginTop: "10px",
+            boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
+          }}
+        >
           <Row justify="space-between" align="middle">
             <Col>
               <Title className="title4" level={4}>
@@ -129,7 +139,12 @@ const ProfilePage = () => {
           <Paragraph className="paragraph">{profileData.Bio}</Paragraph>
         </Card>
 
-        <Card style={{ marginTop: "20px" }}>
+        <Card
+          style={{
+            marginTop: "10px",
+            boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
+          }}
+        >
           <Row justify="space-between" align="middle">
             <Col>
               <Title className="title4" level={4}>
@@ -165,7 +180,12 @@ const ProfilePage = () => {
           />
         </Card>
 
-        <Card style={{ marginTop: "20px" }}>
+        <Card
+          style={{
+            marginTop: "10px",
+            boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
+          }}
+        >
           <Row justify="space-between" align="middle">
             <Col>
               <Title className="title4" level={4}>
@@ -205,7 +225,12 @@ const ProfilePage = () => {
           />
         </Card>
 
-        <Card style={{ marginTop: "20px" }}>
+        <Card
+          style={{
+            marginTop: "10px",
+            boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
+          }}
+        >
           <Row justify="space-between" align="middle">
             <Col>
               <Title className="title4" level={4}>
@@ -244,7 +269,12 @@ const ProfilePage = () => {
           />
         </Card>
 
-        <Card style={{ marginTop: "20px" }}>
+        <Card
+          style={{
+            marginTop: "10px",
+            boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
+          }}
+        >
           <Row justify="space-between" align="middle">
             <Col>
               <Title className="title4" level={4}>

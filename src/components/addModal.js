@@ -172,6 +172,9 @@ const AddModal = ({ id, modalContext, addModalOpen, setAddModalOpen }) => {
       open={addModalOpen}
       onOk={() => handleAdd(form)}
       onCancel={() => setAddModalOpen(false)}
+      okButtonProps={{
+        style: { backgroundColor: "#5D4A7C", borderColor: "#5D4A7C" },
+      }}
     >
       <Form form={form} layout="vertical">
         {renderFormFields()}

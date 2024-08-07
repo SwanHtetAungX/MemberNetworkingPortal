@@ -63,6 +63,9 @@ const UploadModal = ({
       onOk={handleUpload}
       confirmLoading={uploading}
       onCancel={() => setUploadModalOpen(false)}
+      okButtonProps={{
+        style: { backgroundColor: "#5D4A7C", borderColor: "#5D4A7C" },
+      }}
     >
       <Title className="title4" level={4}>
         Steps
