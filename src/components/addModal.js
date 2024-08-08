@@ -2,7 +2,13 @@ import React from "react";
 import { Modal, Form, Input, message } from "antd";
 import { useForm } from "antd/es/form/Form";
 
-const AddModal = ({ id, modalContext, addModalOpen, setAddModalOpen }) => {
+const AddModal = ({
+  id,
+  modalContext,
+  addModalOpen,
+  setAddModalOpen,
+  profileData,
+}) => {
   const [form] = useForm();
 
   const handleAdd = async () => {
@@ -160,6 +166,16 @@ const AddModal = ({ id, modalContext, addModalOpen, setAddModalOpen }) => {
               <Input />
             </Form.Item>
           </>
+        );
+      case "Bio":
+        return (
+          <Form.Item
+            name="Bio"
+            label="About you"
+            initialValue={[profileData.Bio]}
+          >
+            <Input />
+          </Form.Item>
         );
       default:
         return null;

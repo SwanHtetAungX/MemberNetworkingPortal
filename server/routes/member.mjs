@@ -241,7 +241,7 @@ router.patch("/:id/update", async (req, res) => {
     if (setFields.includes(field)) {
       update = {
         $set: {
-          [field]: details,
+          [field]: details[field],
         },
       };
     } else {

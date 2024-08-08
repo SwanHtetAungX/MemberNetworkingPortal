@@ -35,11 +35,16 @@ const ProfilePage = () => {
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [removeModalOpen, setRemoveModalOpen] = useState(false);
   const [modalContext, setModalContext] = useState("");
+  const [isOwner, setIsOwner] = useState(false); // New state for ownership check
 
   const [fileList, setFileList] = useState([]);
   const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
+    const sessionId = sessionStorage.getItem("id");
+    if (sessionId === id) {
+      setIsOwner(true);
+    }
     const fetchProfileData = async () => {
       try {
         const response = await fetch(`http://localhost:5050/members/${id}`);
@@ -102,15 +107,17 @@ const ProfilePage = () => {
         >
           <Row justify="space-between" align="middle">
             <Avatar size={64} icon={<img alt="profile" />} />
-            <Dropdown
-              menu={{
-                items,
-              }}
-              placement="bottomRight"
-              arrow
-            >
-              <Button type="text" icon={<MoreOutlined />}></Button>
-            </Dropdown>
+            {isOwner && (
+              <Dropdown
+                menu={{
+                  items,
+                }}
+                placement="bottomRight"
+                arrow
+              >
+                <Button type="text" icon={<MoreOutlined />}></Button>
+              </Dropdown>
+            )}
           </Row>
           <Title className="title3" level={3}>
             {profileData.FirstName + " " + profileData.LastName}
@@ -132,7 +139,16 @@ const ProfilePage = () => {
             </Col>
             <Col>
               <Row justify="space-between" align="middle">
-                <Button type="text" icon={<EditFilled />}></Button>
+                {isOwner && (
+                  <Button
+                    type="text"
+                    icon={<EditFilled />}
+                    onClick={() => {
+                      setModalContext("Bio");
+                      setAddModalOpen(true);
+                    }}
+                  ></Button>
+                )}
               </Row>
             </Col>
           </Row>
@@ -153,22 +169,26 @@ const ProfilePage = () => {
             </Col>
             <Col>
               <Row justify="space-between" align="middle">
-                <Button
-                  type="text"
-                  icon={<EditFilled />}
-                  onClick={() => {
-                    setModalContext("Skills");
-                    setRemoveModalOpen(true);
-                  }}
-                ></Button>
-                <Button
-                  type="text"
-                  icon={<PlusOutlined />}
-                  onClick={() => {
-                    setModalContext("Skills");
-                    setAddModalOpen(true);
-                  }}
-                ></Button>
+                {isOwner && (
+                  <Button
+                    type="text"
+                    icon={<EditFilled />}
+                    onClick={() => {
+                      setModalContext("Skills");
+                      setAddModalOpen(true);
+                    }}
+                  ></Button>
+                )}
+                {isOwner && (
+                  <Button
+                    type="text"
+                    icon={<PlusOutlined />}
+                    onClick={() => {
+                      setModalContext("Skills");
+                      setAddModalOpen(true);
+                    }}
+                  ></Button>
+                )}
               </Row>
             </Col>
           </Row>
@@ -194,22 +214,27 @@ const ProfilePage = () => {
             </Col>
             <Col>
               <Row justify="space-between" align="middle">
-                <Button
-                  type="text"
-                  icon={<EditFilled />}
-                  onClick={() => {
-                    setModalContext("Experience");
-                    setRemoveModalOpen(true);
-                  }}
-                ></Button>
-                <Button
-                  type="text"
-                  icon={<PlusOutlined />}
-                  onClick={() => {
-                    setModalContext("Experience");
-                    setAddModalOpen(true);
-                  }}
-                ></Button>
+                {isOwner && (
+                  <Button
+                    type="text"
+                    icon={<EditFilled />}
+                    onClick={() => {
+                      setModalContext("Experience");
+                      setRemoveModalOpen(true);
+                    }}
+                  ></Button>
+                )}
+
+                {isOwner && (
+                  <Button
+                    type="text"
+                    icon={<PlusOutlined />}
+                    onClick={() => {
+                      setModalContext("Experience");
+                      setAddModalOpen(true);
+                    }}
+                  ></Button>
+                )}
               </Row>
             </Col>
           </Row>
@@ -239,22 +264,27 @@ const ProfilePage = () => {
             </Col>
             <Col>
               <Row justify="space-between" align="middle">
-                <Button
-                  type="text"
-                  icon={<EditFilled />}
-                  onClick={() => {
-                    setModalContext("Education");
-                    setRemoveModalOpen(true);
-                  }}
-                ></Button>
-                <Button
-                  type="text"
-                  icon={<PlusOutlined />}
-                  onClick={() => {
-                    setModalContext("Education");
-                    setAddModalOpen(true);
-                  }}
-                ></Button>
+                {isOwner && (
+                  <Button
+                    type="text"
+                    icon={<EditFilled />}
+                    onClick={() => {
+                      setModalContext("Education");
+                      setRemoveModalOpen(true);
+                    }}
+                  ></Button>
+                )}
+
+                {isOwner && (
+                  <Button
+                    type="text"
+                    icon={<PlusOutlined />}
+                    onClick={() => {
+                      setModalContext("Education");
+                      setAddModalOpen(true);
+                    }}
+                  ></Button>
+                )}
               </Row>
             </Col>
           </Row>
@@ -283,22 +313,27 @@ const ProfilePage = () => {
             </Col>
             <Col>
               <Row justify="space-between" align="middle">
-                <Button
-                  type="text"
-                  icon={<EditFilled />}
-                  onClick={() => {
-                    setModalContext("Certifications");
-                    setRemoveModalOpen(true);
-                  }}
-                ></Button>
-                <Button
-                  type="text"
-                  icon={<PlusOutlined />}
-                  onClick={() => {
-                    setModalContext("Certifications");
-                    setAddModalOpen(true);
-                  }}
-                ></Button>
+                {isOwner && (
+                  <Button
+                    type="text"
+                    icon={<EditFilled />}
+                    onClick={() => {
+                      setModalContext("Certifications");
+                      setRemoveModalOpen(true);
+                    }}
+                  ></Button>
+                )}
+
+                {isOwner && (
+                  <Button
+                    type="text"
+                    icon={<PlusOutlined />}
+                    onClick={() => {
+                      setModalContext("Certifications");
+                      setAddModalOpen(true);
+                    }}
+                  ></Button>
+                )}
               </Row>
             </Col>
           </Row>
@@ -335,6 +370,7 @@ const ProfilePage = () => {
         modalContext={modalContext}
         addModalOpen={addModalOpen}
         setAddModalOpen={setAddModalOpen}
+        profileData={profileData}
       />
     </Layout>
   );
