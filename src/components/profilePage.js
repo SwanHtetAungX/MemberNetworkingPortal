@@ -76,6 +76,20 @@ const ProfilePage = () => {
         </Button>
       ),
     },
+    {
+      key: "2",
+      label: (
+        <Button
+          type="text"
+          onClick={() => {
+            setModalContext("Profile");
+            setAddModalOpen(true);
+          }}
+        >
+          Edit Profile
+        </Button>
+      ),
+    },
   ];
 
   return (
@@ -131,9 +145,11 @@ const ProfilePage = () => {
             )}
           </Row>
           <Title className="title3" level={3}>
-            {profileData.FirstName + " " + profileData.LastName}
+            {profileData.FirstName} {profileData.LastName}
           </Title>
-          <Paragraph className="paragraph">{profileData.JobTitle}</Paragraph>
+          <Paragraph className="paragraph">
+            {profileData.JobTitle} in {profileData.Department}
+          </Paragraph>
         </Card>
 
         <Card

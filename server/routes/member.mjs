@@ -226,31 +226,39 @@ router.patch("/:id/update", async (req, res) => {
     let collection = await db.collection("members");
     const query = { _id: new ObjectId(req.params.id) };
 
-    const { field, details } = req.body;
+    const { details } = req.body;
 
     const setFields = [
+      "FirstName",
+      "LastName",
       "Password",
       "ProfilePic",
       "JobTitle",
       "Department",
       "Location",
       "Bio",
+      "Email",
+      "Contact",
     ];
 
-    let update;
-    if (setFields.includes(field)) {
-      update = {
-        $set: {
-          [field]: details[field],
-        },
-      };
-    } else {
-      // Other fields will be pushed (arrays)
-      update = {
-        $push: {
-          [field]: details,
-        },
-      };
+    let update = { $set: {}, $push: {} }; // Initialize $set and $push as empty objects
+
+    for (const field in details) {
+      if (setFields.includes(field)) {
+        // Set the field if it's in setFields
+        update.$set[field] = details[field];
+      } else {
+        // Push other fields (arrays)
+        update.$push[field] = details[field];
+      }
+    }
+
+    // Clean up the update object by removing empty $set or $push
+    if (Object.keys(update.$set).length === 0) {
+      delete update.$set;
+    }
+    if (Object.keys(update.$push).length === 0) {
+      delete update.$push;
     }
 
     let result = await collection.updateOne(query, update);

@@ -38,6 +38,71 @@ const AddModal = ({
 
   const renderFormFields = () => {
     switch (modalContext) {
+      case "Profile":
+        return (
+          <>
+            <Form.Item
+              name="FirstName"
+              label="First name"
+              initialValue={[profileData.FirstName]}
+              rules={[
+                {
+                  required: true,
+                  message: "Please enter your first name",
+                },
+              ]}
+            >
+              <Input />
+            </Form.Item>
+            <Form.Item
+              name="LastName"
+              label="Last Name"
+              initialValue={[profileData.LastName]}
+              rules={[
+                { required: true, message: "Please enter your last name" },
+              ]}
+            >
+              <Input />
+            </Form.Item>
+            <Form.Item
+              name="JobTitle"
+              label="Job Title"
+              initialValue={[profileData.JobTitle]}
+              rules={[
+                { required: true, message: "Please enter your job title" },
+              ]}
+            >
+              <Input />
+            </Form.Item>
+            <Form.Item
+              name="Department"
+              label="Your Department"
+              initialValue={[profileData.Department]}
+              rules={[
+                {
+                  required: true,
+                  message: "Please enter the department you are apart of",
+                },
+              ]}
+            >
+              <Input />
+            </Form.Item>
+            <Form.Item
+              name="Location"
+              label="Location"
+              initialValue={[profileData.Location]}
+            >
+              <Input />
+            </Form.Item>
+            <Form.Item
+              name="Contact"
+              label="Your contact"
+              initialValue={[profileData.Location]}
+            >
+              <Input />
+            </Form.Item>
+          </>
+        );
       case "Skills":
         return (
           <Form.Item
