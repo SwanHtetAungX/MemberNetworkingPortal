@@ -18,11 +18,11 @@ const ConnectBtn = () => {
         const result = await response.json();
         setConnectionStatus(result.status);
       } else {
-        setConnectionStatus(false); // No connection found
+        setConnectionStatus(false); //no connection found
       }
     } catch (error) {
       console.error("Failed to check connection status:", error);
-      setConnectionStatus(false); // Handle the error case
+      setConnectionStatus(false);
     }
   }, [userID1, userID2]);
 
@@ -49,7 +49,7 @@ const ConnectBtn = () => {
 
       if (response.ok) {
         message.success("Connection request sent successfully.");
-        setConnectionStatus("Pending"); // Update status to Pending after request
+        setConnectionStatus("Pending"); // ppdate status to Pending after request
       } else {
         throw new Error("Failed to send connection request.");
       }
@@ -77,7 +77,7 @@ const ConnectBtn = () => {
       if (response.ok) {
         message.success("Connection request sent successfully.");
         setconfirmationModal(false);
-        setConnectionStatus(false); // Update status to Pending after unfollow or remove request
+        setConnectionStatus(false); // update status to Pending after unfollow or remove request
       } else {
         throw new Error("Failed to remove connection request.");
       }
@@ -94,9 +94,9 @@ const ConnectBtn = () => {
         style={{ backgroundColor: "#5D4A7C", color: "white" }}
         onClick={() => {
           if (connectionStatus === "Pending" || connectionStatus === "Accept") {
-            setconfirmationModal(true); // Show modal for Pending or Accept status
+            setconfirmationModal(true);
           } else {
-            handleRequestConnect(); // Send connection request
+            handleRequestConnect();
           }
         }}
       >
