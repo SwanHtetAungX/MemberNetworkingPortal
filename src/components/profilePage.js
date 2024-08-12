@@ -24,6 +24,7 @@ import {
 import AddModal from "./addModal";
 import UploadModal from "./uploadModal";
 import RemoveModal from "./removeModal";
+import ConnectBtn from "./connectBtn";
 
 const { Header, Content } = Layout;
 const { Title, Paragraph } = Typography;
@@ -117,6 +118,16 @@ const ProfilePage = () => {
               >
                 <Button type="text" icon={<MoreOutlined />}></Button>
               </Dropdown>
+            )}
+            {!isOwner && (
+              <Row gutter={8}>
+                <Col>
+                  <Button type="text">Message</Button>
+                </Col>
+                <Col>
+                  <ConnectBtn />
+                </Col>
+              </Row>
             )}
           </Row>
           <Title className="title3" level={3}>

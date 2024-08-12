@@ -12,17 +12,19 @@ router.get("/:id", async (req, res) => {
   try {
     let collection = await db.collection("connections");
 
-    let results = await collection.find({ userID2: req.params.id }).toArray();
+    let results = await collection
+      .find({ userID1: req.params.id, status: "Pending" })
+      .toArray();
     res.send(results).status(200);
   } catch (error) {}
 });
 
 //request connection
-router.post("/", async (req, res) => {
+router.post("/:id", async (req, res) => {
   try {
     let newConnection = {
       userID1: req.body.userID1,
-      userID2: req.body.userID2,
+      userID2: req.params.id,
       status: "Pending",
       requestedAt: formatDate(new Date()),
       acceptedAt: null,
@@ -68,6 +70,31 @@ router.delete("/:id", async (req, res) => {
     res.status(200).send(result);
   } catch (error) {
     console.log("Error processing upload:", error);
+    res.status(500).send("Internal Server Error");
+  }
+});
+
+router.get("/:id/:userID1/checker", async (req, res) => {
+  try {
+    const userID1 = req.params.userID1;
+    const userID2 = req.params.id;
+    const collection = await db.collection("connections");
+
+    // Find a connection between the two users
+    const connection = await collection.findOne({
+      $or: [
+        { userID1, userID2 },
+        { userID1: userID2, userID2: userID1 },
+      ],
+    });
+
+    if (connection) {
+      res.status(200).json({ status: connection.status });
+    } else {
+      res.status(200).json({ exists: false });
+    }
+  } catch (error) {
+    console.error("Error checking connection:", error);
     res.status(500).send("Internal Server Error");
   }
 });
