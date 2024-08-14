@@ -9,6 +9,7 @@ import Footer from './components/footer';
 import SignUp from './components/sign-up';
 import Login from './components/login-form';
 import TwoFactorAuth from './components/twoFA';
+import AdminLogin from './components/admin-login';
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Landing />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/admin-login" element={<AdminLogin />} />
           <Route path="/verify-2fa" element={<TwoFactorAuth />} />
           <Route path="/signup" element={<SignUp />} />
         </Routes>

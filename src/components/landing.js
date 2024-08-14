@@ -17,7 +17,9 @@ function Landing() {
                         <div className="col-md-6 text-center">
                             <h1>Your Dream Team,<br />A Click Away</h1>
                             <div className="mt-3">
+                                <Link to="/admin-login">
                                 <button className="btn btn-custom mb-2">Admin</button>
+                                </Link>
                                 <br />
                                 <Link to="/login">
                                     <button className="btn btn-custom">Member</button>

@@ -49,7 +49,7 @@ const AdminLogin = () => {
         <div className="form-container">
             <img src="/img7.png" alt="Descriptive Alt Text" className="form-image" />
             <form className="form" onSubmit={handleSubmit}>
-                <h2>Member Login</h2>
+                <h2>Admin Login</h2>
                 {error && <p className="error">{error}</p>}
                 <label>Email:
                     <input
