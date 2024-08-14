@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import '../css/form.css';
-//import { Link } from 'react-router-dom';
 
 const Register = () => {
     const [formData, setFormData] = useState({
@@ -80,9 +80,9 @@ const Register = () => {
                     />
                 </label>
                 <button type="submit">Register</button>
-                {/* <p className="link">
-                    Already a Member? <Link>Login Here.</Link>
-                </p> */}
+                <p className="link">
+                    Already a Member? <Link to="/login">Login Here.</Link>
+                </p>
             </form>
         </div>
     );

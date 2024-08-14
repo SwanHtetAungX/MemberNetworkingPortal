@@ -1,14 +1,15 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import '../css/landing.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 
 
-function Landing(){
-    
-    return(
-<div className="d-flex flex-column min-vh-100">
-            
+function Landing() {
+
+    return (
+        <div className="d-flex flex-column min-vh-100">
+
             <div className="main-content">
                 <div className="container container-custom mt-4">
                     <div className="row align-items-center">
@@ -18,8 +19,9 @@ function Landing(){
                             <div className="mt-3">
                                 <button className="btn btn-custom mb-2">Admin</button>
                                 <br />
-                                <button className="btn btn-custom">Member</button>
-                            </div>
+                                <Link to="/login">
+                                    <button className="btn btn-custom">Member</button>
+                                </Link>                            </div>
                         </div>
 
                         {/* Image Column */}
@@ -28,8 +30,8 @@ function Landing(){
                         </div>
                     </div>
                 </div>
-            </div>           
-        </div>               
+            </div>
+        </div>
     )
 }
 

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import '../css/form.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
@@ -58,6 +59,9 @@ function Login() {
                     />
                 </label>
                 <button type="submit">Login</button>
+                <p className="link">
+                    Not a member? <Link to="/signup">Sign Up here.</Link>
+                </p>
             </form>
             {is2FA && <TwoFactorAuth email={formData.Email} />}
         </div>
