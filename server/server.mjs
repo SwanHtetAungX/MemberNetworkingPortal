@@ -6,7 +6,7 @@ import dotenv from "dotenv";
 dotenv.config(); 
 
 // Define the port number
-const PORT = process.env.PORT || 5050;
+const PORT = process.env.PORT || 3000;
 
 
 // Create an instance of the Express application

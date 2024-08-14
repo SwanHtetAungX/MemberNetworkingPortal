@@ -1,0 +1,80 @@
+.form-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    background-color: #f4f4f4;
+}
+
+.form-image {
+    width: auto;
+    height:auto;
+    border-top-right-radius: 50px;
+    border-bottom-right-radius: 50px;
+    object-fit: cover;
+    margin-right: 50px;
+}
+
+.form {
+    background-color: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    max-width: 400px;
+    width: 100%;
+}
+
+.form h2 {
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.form label {
+    display: block;
+    margin-bottom: 15px;
+}
+
+.form input {
+    width: 100%;
+    padding: 10px;
+    margin-top: 5px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+.name-fields {
+    display: flex;
+    gap: 10px; /* Adjust spacing between the fields */
+}
+
+.name-fields label {
+    flex: 1; /* Ensure both fields take up equal space */
+}
+
+.form button {
+    width: 100%;
+    padding: 10px;
+    background-color: #5D4A7C;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.form button:hover {
+    background-color: #4a3b6a;
+}
+
+.link {
+    text-align: center;
+}
+
+.link a {
+    color: #5D4A7C;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.link a:hover {
+    text-decoration: underline;
+}

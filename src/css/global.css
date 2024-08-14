@@ -1,0 +1,26 @@
+/* global.css */
+html, body {
+    height: 100%;
+    margin: 0;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh; /* Full viewport height */
+}
+
+.main-content {
+    flex: 1; /* Takes up remaining space */
+}
+
+.footer {
+    width: 100%;
+    height: 56px;
+    background-color: #5D4A7C;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+}

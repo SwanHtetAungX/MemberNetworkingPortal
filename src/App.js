@@ -1,8 +1,22 @@
 import React from 'react';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import 'bootstrap/dist/js/bootstrap.bundle.min.js';
+import '../src/css/global.css';
+//import Landing from './components/landing';
+import Navbar from './components/navbar';
+import Footer from './components/footer';
+import SignUp from './components/sign-up';
+
 
 function App() {
 
-  return <h1>Setting Up</h1>
+  return (
+    <div>
+      <Navbar />
+      <SignUp />
+      <Footer />
+    </div>
+  );
 }
 
 export default App;
