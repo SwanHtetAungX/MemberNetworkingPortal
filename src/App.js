@@ -6,14 +6,14 @@ import '../src/css/global.css';
 import Navbar from './components/navbar';
 import Footer from './components/footer';
 import SignUp from './components/sign-up';
-
+import Login from './components/login-form';
 
 function App() {
 
   return (
     <div>
       <Navbar />
-      <SignUp />
+      <Login />
       <Footer />
     </div>
   );
