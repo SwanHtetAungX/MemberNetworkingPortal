@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import '../css/form.css';
+
 
 function TwoFactorAuth({ email }) {
     const [twofaCode, setTwofaCode] = useState('');
@@ -16,7 +18,8 @@ function TwoFactorAuth({ email }) {
 
             if (response.ok) {
                 const data = await response.json();
-                setMessage('Login successful! Token: ' + data.token);
+                setMessage('Login successful! ');
+                // Token: ' + data.token
             } else {
                 const errorData = await response.text();
                 setError(errorData);
@@ -27,22 +30,19 @@ function TwoFactorAuth({ email }) {
     };
 
     return (
-        <div className="twofa-container">
-            <form onSubmit={handleSubmit}>
-                <h2>Two-Factor Authentication</h2>
-                {error && <p className="error">{error}</p>}
-                <label>Enter the 2FA code sent to your email:
-                    <input
-                        type="text"
-                        value={twofaCode}
-                        onChange={(e) => setTwofaCode(e.target.value)}
-                        required
-                    />
-                </label>
-                <button type="submit">Verify</button>
-                {message && <p className="success">{message}</p>}
-            </form>
-        </div>
+        <form onSubmit={handleSubmit}>
+            {error && <p className="error">{error}</p>}
+            <label>Enter the 2FA code sent to your email:
+                <input
+                    type="text"
+                    value={twofaCode}
+                    onChange={(e) => setTwofaCode(e.target.value)}
+                    required
+                />
+            </label>
+            <button type="submit">Verify</button>
+            {message && <p className="success">{message}</p>}
+        </form>
     );
 }
 

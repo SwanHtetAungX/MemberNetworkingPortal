@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+// import { useNavigate } from 'react-router-dom';
 import '../css/form.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
@@ -39,7 +39,10 @@ const AdminLogin = () => {
             // Handle successful login
             const result = await response.json();
             console.log('Token:', result.token);
-            // Redirect or update state here
+            console.log('Login successful! Redirecting to admin profile...');
+             
+             // Redirect to admin profile page
+            // navigate('/admin/profile');
         } catch (err) {
             setError(err.message);
         }

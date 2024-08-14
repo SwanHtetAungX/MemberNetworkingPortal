@@ -3,12 +3,13 @@ import { Link } from 'react-router-dom';
 import '../css/form.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
+import { Modal } from 'react-bootstrap';
 import TwoFactorAuth from './twoFA';
 
 function Login() {
     const [formData, setFormData] = useState({ Email: '', Password: '' });
     const [error, setError] = useState('');
-    const [is2FA, setIs2FA] = useState(false);
+    const [show2FA, setShow2FA] = useState(false);
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -24,7 +25,7 @@ function Login() {
             });
 
             if (response.ok) {
-                setIs2FA(true); // Show 2FA form if login is successful
+                setShow2FA(true);  // Show 2FA form if login is successful
             } else {
                 const errorData = await response.text();
                 setError(errorData);
@@ -33,6 +34,8 @@ function Login() {
             setError('An error occurred during login');
         }
     };
+
+    const handleClose2FA = () => setShow2FA(false);
 
     return (
         <div className="form-container">
@@ -63,7 +66,14 @@ function Login() {
                     Not a member? <Link to="/signup">Sign Up here.</Link>
                 </p>
             </form>
-            {is2FA && <TwoFactorAuth email={formData.Email} />}
+            <Modal show={show2FA} onHide={handleClose2FA}>
+                <Modal.Header closeButton>
+                    <Modal.Title>Two-Factor Authentication</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <TwoFactorAuth email={formData.Email} />
+                </Modal.Body>
+            </Modal>
         </div>
     );
 }
