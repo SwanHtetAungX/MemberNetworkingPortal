@@ -1,14 +1,16 @@
 import React, { useState } from 'react';
 import '../css/form.css';
-
+import { useNavigate } from 'react-router-dom';
 
 function TwoFactorAuth({ email }) {
     const [twofaCode, setTwofaCode] = useState('');
     const [error, setError] = useState('');
     const [message, setMessage] = useState('');
+    const navigate = useNavigate();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        console.log("Submitting 2FA Code:", twofaCode); // Debugging line
         try {
             const response = await fetch('/testing/verify-2fa', {
                 method: 'POST',
@@ -18,13 +20,18 @@ function TwoFactorAuth({ email }) {
 
             if (response.ok) {
                 const data = await response.json();
-                setMessage('Login successful! ');
-                // Token: ' + data.token
+                localStorage.setItem('authToken', data.token);
+                console.log("Verification Successful:", data.token); // Debugging line
+                setMessage('Login successful!');
+                sessionStorage.setItem('token', data.token);
+                
             } else {
                 const errorData = await response.text();
+                console.log("Verification Failed:", errorData); // Debugging line
                 setError(errorData);
             }
         } catch (err) {
+            console.error("Error during 2FA verification:", err); // Debugging line
             setError('An error occurred during 2FA verification');
         }
     };

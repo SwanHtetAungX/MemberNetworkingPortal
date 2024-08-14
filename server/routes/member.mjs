@@ -105,7 +105,7 @@ router.post('/login', async (req, res) => {
         // Send 2FA code to user's email
         await send2FACode(Email, twofaCode);
 
-        res.status(200).send("2FA Code sent to your email");
+        res.status(200).json({ message: "2FA Code sent to your email" });
     } catch (error) {
         console.error(error);
         res.status(500).send("Internal Server Error");

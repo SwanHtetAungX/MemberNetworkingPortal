@@ -1,80 +1,111 @@
+
+
+/* Container for both forms */
 .form-container {
     display: flex;
-    align-items: center;
     justify-content: center;
+    align-items: center;
     min-height: 100vh;
+    padding: 20px;
     background-color: #f4f4f4;
 }
 
+/* Common styles for images in forms */
 .form-image {
-    width: auto;
-    height:auto;
-    border-top-right-radius: 50px;
-    border-bottom-right-radius: 50px;
-    object-fit: cover;
-    margin-right: 50px;
+    max-width: 100%;
+    height: auto;
+    max-height: 400px; /* Adjust this value to fit the desired size */
+    margin-right: 20px;
 }
 
+/* Styles for the form */
 .form {
-    background-color: white;
+    background: white;
     padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    max-width: 400px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     width: 100%;
+    max-width: 500px; /* Limit form width */
 }
 
-.form h2 {
-    margin-bottom: 20px;
-    text-align: center;
-}
-
-.form label {
-    display: block;
-    margin-bottom: 15px;
-}
-
-.form input {
-    width: 100%;
-    padding: 10px;
-    margin-top: 5px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-}
-
+/* Name fields for the signup form */
 .name-fields {
     display: flex;
-    gap: 10px; /* Adjust spacing between the fields */
+    justify-content: space-between;
+    margin-bottom: 10px;
 }
 
 .name-fields label {
-    flex: 1; /* Ensure both fields take up equal space */
+    flex: 1;
+    margin-right: 10px;
 }
 
-.form button {
+.name-fields input {
+    width: 100%;
+}
+
+/* Labels and inputs */
+label {
+    display: block;
+    margin-bottom: 10px;
+}
+
+input {
     width: 100%;
     padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+/* Buttons */
+.form button {
     background-color: #5D4A7C;
     color: white;
     border: none;
-    border-radius: 5px;
+    padding: 10px;
+    border-radius: 4px;
     cursor: pointer;
+    width: 100%;
 }
 
-.form button:hover {
-    background-color: #4a3b6a;
+button:hover {
+    background-color: #4a3a5c;
 }
 
-.link {
-    text-align: center;
+/* Error and success messages */
+.error, .success {
+    color: red;
+    margin: 10px 0;
 }
 
-.link a {
-    color: #5D4A7C;
-    text-decoration: none;
-    font-weight: bold;
+.success {
+    color: green;
 }
 
-.link a:hover {
-    text-decoration: underline;
+/* Responsive Styles */
+@media (max-width: 768px) {
+    .form-container {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .form-image {
+        max-height: 250px; /* Adjust for smaller screens */
+        margin-right: 0;
+        margin-bottom: 20px;
+    }
+}
+
+/* Modal Styles for Two-Factor Authentication */
+.modal-dialog {
+    max-width: 500px;
+}
+
+.modal-content {
+    padding: 20px;
+}
+
+.modal-header, .modal-body {
+    padding: 10px;
 }

@@ -9,7 +9,7 @@ import TwoFactorAuth from './twoFA';
 function Login() {
     const [formData, setFormData] = useState({ Email: '', Password: '' });
     const [error, setError] = useState('');
-    const [show2FA, setShow2FA] = useState(false);
+    const [show2FA, setShow2FA] = useState(false); // State to control 2FA modal visibility
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -25,7 +25,10 @@ function Login() {
             });
 
             if (response.ok) {
-                setShow2FA(true);  // Show 2FA form if login is successful
+                const data = await response.json();
+                localStorage.setItem('authToken', data.token); // Store token
+                console.log('Token:', data.token);
+                setShow2FA(true); // Show 2FA modal
             } else {
                 const errorData = await response.text();
                 setError(errorData);
@@ -35,37 +38,40 @@ function Login() {
         }
     };
 
-    const handleClose2FA = () => setShow2FA(false);
+    const handleClose2FA = () => setShow2FA(false); // Close 2FA modal
 
     return (
-        <div className="form-container">
-            <img src="/img7.png" alt="Descriptive Alt Text" className="form-image" />
-            <form className="form" onSubmit={handleSubmit}>
-                <h2>Member Login</h2>
-                {error && <p className="error">{error}</p>}
-                <label>Email:
-                    <input
-                        type="email"
-                        name="Email"
-                        value={formData.Email}
-                        onChange={handleChange}
-                        required
-                    />
-                </label>
-                <label>Password:
-                    <input
-                        type="password"
-                        name="Password"
-                        value={formData.Password}
-                        onChange={handleChange}
-                        required
-                    />
-                </label>
-                <button type="submit">Login</button>
-                <p className="link">
-                    Not a member? <Link to="/signup">Sign Up here.</Link>
-                </p>
-            </form>
+        <div className="form-container d-flex align-items-center justify-content-center min-vh-100">
+            <div className="form-content d-flex flex-column flex-md-row align-items-center">
+                <img src="/img7.png" alt="Descriptive Alt Text" className="form-image img-fluid" />
+                <form className="form p-4 p-md-5" onSubmit={handleSubmit}>
+                    <h2>Member Login</h2>
+                    {error && <p className="error">{error}</p>}
+                    <label>Email:
+                        <input
+                            type="email"
+                            name="Email"
+                            value={formData.Email}
+                            onChange={handleChange}
+                            required
+                        />
+                    </label>
+                    <label>Password:
+                        <input
+                            type="password"
+                            name="Password"
+                            value={formData.Password}
+                            onChange={handleChange}
+                            required
+                        />
+                    </label>
+                    <button type="submit">Login</button>
+                    <p className="link mt-3">
+                        Not a member? <Link to="/signup">Sign Up here.</Link>
+                    </p>
+                </form>
+            </div>
+
             <Modal show={show2FA} onHide={handleClose2FA}>
                 <Modal.Header closeButton>
                     <Modal.Title>Two-Factor Authentication</Modal.Title>

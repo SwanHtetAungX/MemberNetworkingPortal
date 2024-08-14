@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import '../css/form.css';
+import '../css/form.css'; // Make sure this CSS file is up-to-date
 
 const Register = () => {
     const [formData, setFormData] = useState({
@@ -40,7 +40,7 @@ const Register = () => {
             <img src="/img7.png" alt="Descriptive Alt Text" className="form-image" />
             
             <form className="form" onSubmit={handleSubmit}>
-                <h2> Member Sign Up</h2>
+                <h2>Member Sign Up</h2>
                 <div className="name-fields">
                     <label>First Name:
                         <input
