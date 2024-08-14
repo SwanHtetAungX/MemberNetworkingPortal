@@ -59,7 +59,7 @@ const RemoveModal = ({
             )}
           />
         );
-      case "Experience":
+      case "Positions":
         return (
           <List
             dataSource={profileData.Positions}

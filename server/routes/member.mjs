@@ -8,7 +8,39 @@ import nodemailer from "nodemailer";
 const router = express.Router();
 
 const storage = multer.memoryStorage();
-const upload = multer({ storage }).array("files[]");
+const upload = multer({ storage });
+
+router.patch(
+  "/:id/ProfilePic",
+  upload.single("profilePic"),
+  async (req, res) => {
+    try {
+      let collection = await db.collection("members");
+      const query = { _id: new ObjectId(req.params.id) };
+
+      if (!req.file) {
+        return res.status(400).send("No file uploaded");
+      }
+
+      const base64Image = req.file.buffer.toString("base64");
+      const imageType = req.file.mimetype; // e.g., 'image/png'
+      const base64String = `data:${imageType};base64,${base64Image}`;
+
+      const update = {
+        $set: {
+          ProfilePic: base64String,
+        },
+      };
+
+      let result = await collection.updateOne(query, update);
+
+      res.status(200).send(result);
+    } catch (error) {
+      console.error("Error uploading profile picture:", error);
+      res.status(500).send("Internal Server Error");
+    }
+  }
+);
 
 //function to convert csv to json
 const convertCSVtoJSON = async (csvBuffer) => {
@@ -176,8 +208,8 @@ router.post("/", async (req, res) => {
 });
 
 // Upload and process LinkedIn data
-//postman usage: form-data, key: files, type: file
-router.patch("/:id/upload", upload, async (req, res) => {
+//postman usage: form-data, key: files[], type: file
+router.patch("/:id/upload", upload.array("files[]"), async (req, res) => {
   try {
     let collection = await db.collection("members");
     const query = { _id: new ObjectId(req.params.id) };

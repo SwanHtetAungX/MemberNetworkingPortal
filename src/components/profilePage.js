@@ -121,7 +121,14 @@ const ProfilePage = () => {
           }}
         >
           <Row justify="space-between" align="middle">
-            <Avatar size={64} icon={<img alt="profile" />} />
+            <Avatar
+              size={64}
+              icon={
+                profileData.ProfilePic && (
+                  <img src={profileData.ProfilePic} alt="profile" />
+                )
+              }
+            />
             {isOwner && (
               <Dropdown
                 menu={{
@@ -202,7 +209,7 @@ const ProfilePage = () => {
                     icon={<EditFilled />}
                     onClick={() => {
                       setModalContext("Skills");
-                      setAddModalOpen(true);
+                      setRemoveModalOpen(true);
                     }}
                   ></Button>
                 )}
@@ -246,7 +253,7 @@ const ProfilePage = () => {
                     type="text"
                     icon={<EditFilled />}
                     onClick={() => {
-                      setModalContext("Experience");
+                      setModalContext("Positions");
                       setRemoveModalOpen(true);
                     }}
                   ></Button>
@@ -257,7 +264,7 @@ const ProfilePage = () => {
                     type="text"
                     icon={<PlusOutlined />}
                     onClick={() => {
-                      setModalContext("Experience");
+                      setModalContext("Positions");
                       setAddModalOpen(true);
                     }}
                   ></Button>
