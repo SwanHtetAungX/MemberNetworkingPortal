@@ -1,6 +1,5 @@
 import express from "express";
 import db from "../db/conn.mjs";
-import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 dotenv.config();
@@ -19,9 +18,8 @@ router.post('/login', async (req, res) => {
             return res.status(400).send("Invalid email or password");
         }
 
-        // Check password
-        const isMatch = await bcrypt.compare(Password, admin.Password);
-        if (!isMatch) {
+        // Check password directly
+        if (Password !== admin.Password) {
             return res.status(400).send("Invalid email or password");
         }
 
