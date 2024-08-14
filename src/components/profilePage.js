@@ -25,6 +25,7 @@ import AddModal from "./addModal";
 import UploadModal from "./uploadModal";
 import RemoveModal from "./removeModal";
 import ConnectBtn from "./connectBtn";
+import ProfilePicModal from "./profilePicModal";
 
 const { Header, Content } = Layout;
 const { Title, Paragraph } = Typography;
@@ -36,6 +37,7 @@ const ProfilePage = () => {
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [removeModalOpen, setRemoveModalOpen] = useState(false);
   const [modalContext, setModalContext] = useState("");
+  const [profilePicModalOpen, setProfilePicModalOpen] = useState(false);
   const [isOwner, setIsOwner] = useState(false); // New state for ownership check
 
   const [fileList, setFileList] = useState([]);
@@ -121,14 +123,24 @@ const ProfilePage = () => {
           }}
         >
           <Row justify="space-between" align="middle">
-            <Avatar
-              size={64}
-              icon={
-                profileData.ProfilePic && (
-                  <img src={profileData.ProfilePic} alt="profile" />
-                )
-              }
-            />
+            <Button type="text" onClick={() => setProfilePicModalOpen(true)}>
+              <Avatar
+                size={{
+                  xs: 24,
+                  sm: 32,
+                  md: 40,
+                  lg: 64,
+                  xl: 80,
+                  xxl: 100,
+                }}
+                icon={
+                  profileData.ProfilePic && (
+                    <img src={profileData.ProfilePic} alt="profile" />
+                  )
+                }
+              />
+            </Button>
+
             {isOwner && (
               <Dropdown
                 menu={{
@@ -405,6 +417,11 @@ const ProfilePage = () => {
         addModalOpen={addModalOpen}
         setAddModalOpen={setAddModalOpen}
         profileData={profileData}
+      />
+      <ProfilePicModal
+        id={id}
+        setProfilePicModalOpen={setProfilePicModalOpen}
+        profilePicModalOpen={profilePicModalOpen}
       />
     </Layout>
   );
