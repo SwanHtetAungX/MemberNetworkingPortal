@@ -7,6 +7,16 @@ import MembersPage from './pages/MemberPage';
 import AdminProfile from './pages/AdminProfilePage';
 import NotificationPage from './pages/NotificationPage';
 import ConnectionPage from './pages/ConnectionPage';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import 'bootstrap/dist/js/bootstrap.bundle.min.js';
+import '../src/css/global.css';
+import Landing from './components/landing';
+import Navbar from './components/navbar';
+import Footer from './components/footer';
+import SignUp from './components/sign-up';
+import Login from './components/login-form';
+import TwoFactorAuth from './components/twoFA';
+import AdminLogin from './components/admin-login';
 
 const { Content } = Layout;
 
@@ -23,7 +33,13 @@ const AppLayout = () => {
               <Route path='/admin-profile' element={<AdminProfile/>} />
               <Route path='/notification' element={<NotificationPage/>} />
               <Route path='/connection' element={<ConnectionPage/>} />
+              <Route path="/" element={<Landing />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/admin-login" element={<AdminLogin />} />
+              <Route path="/verify-2fa" element={<TwoFactorAuth />} />
+              <Route path="/signup" element={<SignUp />} />
             </Routes>
+               <Footer />
           </Content>
         </Layout>
       </Layout>
@@ -43,3 +59,4 @@ const ConditionalSidebar = () => {
 };
 
 export default AppLayout;
+

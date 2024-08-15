@@ -1,0 +1,13 @@
+.search-spacing{
+    margin-left: 100px;
+    margin-right: 40px;
+}
+
+.nav-item + .nav-item {
+    margin-left: 35px; /* Adds 20px space between each nav-item */
+}
+
+.nav-link .bi {
+    font-size: 24px;
+    color: #372554;
+}
