@@ -151,36 +151,59 @@ router.delete("/:id", async (req, res) => {
 router.get("/connections/:id", async (req, res) => {
   try {
     let collection = await db.collection("connections");
-
-    // Fetch connections where the provided user ID is either userID1 or userID2 and the status is "Accept"
-    let results = await collection.find({
+    const results = await collection.find({
       $or: [{ userID1: req.params.id }, { userID2: req.params.id }],
       status: "Accept"
     }).toArray();
 
-    // Format the response to send only relevant data
-    const formattedResults = results.map(conn => ({
-      connectedUserID: conn.userID1 === req.params.id ? conn.userID2 : conn.userID1
+    const users = await Promise.all(results.map(async (conn) => {
+      const userId = conn.userID1 === req.params.id ? conn.userID2 : conn.userID1;
+      const user = await db.collection("members").findOne({_id: new ObjectId(userId)});
+      if (!user) {
+        return { ...conn, connectedUser: null }; 
+      }
+      return {
+        ...conn,
+        connectedUser: {
+          FirstName: user.FirstName || "Unknown",
+          LastName: user.LastName || "Unknown",
+          Email: user.Email || "No email",
+          ProfilePic: user.ProfilePic || undefined
+        }
+      };
     }));
 
-    res.status(200).send(formattedResults);
+    res.status(200).send(users);
   } catch (error) {
-    console.log("Error fetching accepted connections:", error);
+    console.log("Error fetching connections with user details:", error);
     res.status(500).send("Internal Server Error");
   }
 });
+
+
 
 //get notifications for a user
 router.get("/notifications/:id", async (req, res) => {
   try {
     let notificationCollection = await db.collection('notifications');
     let notifications = await notificationCollection.find({ userID: req.params.id }).toArray();
-    res.status(200).send(notifications);
+
+    // Fetch each user's details and attach it to each notification
+    const enhancedNotifications = await Promise.all(notifications.map(async (notification) => {
+      const user = await db.collection("members").findOne({ _id: new ObjectId(notification.userID) });
+      return {
+        ...notification,
+        userName: user ? `${user.FirstName} ${user.LastName}` : 'Unknown User'
+      };
+    }));
+
+    res.status(200).send(enhancedNotifications);
   } catch (error) {
     console.log("Error fetching notifications:", error);
     res.status(500).send("Internal Server Error");
   }
 });
+
 
 
 

@@ -72,7 +72,18 @@ router.get("/pending", async (req, res) => {
   }
 });
 
-//Route: To get pending members
+// Route: To get all approved members
+router.get("/approved", async (req, res) => {
+  const collection = await db.collection("members");
+  const results = await collection.find({ status: "Approved" }).toArray();
+  if (results.length === 0) {
+    res.status(404).send({ message: "No approved members found." });
+  } else {
+    res.status(200).send(results);
+  }
+});
+
+//Route: To get suspened members
 router.get("/suspended", async (req, res) => {
   let collection = await db.collection("members");
   let results = await collection.find({ status: "Suspended" }).toArray();
@@ -133,7 +144,7 @@ router.patch("/:id/suspend", async (req, res) =>{
 
   const user = await collection.findOne(query);
 
-  const newStatus = user.status === "Suspended" ? "Unsuspended" : "Suspended";
+  const newStatus = user.status === "Suspended" ? "Approved" : "Suspended";
 
   const update = { $set: { status: newStatus } };
 
@@ -154,34 +165,40 @@ router.patch("/:id/suspend", async (req, res) =>{
 
 
 
-// add member by admins
-router.post("/", async (req , res) => {
+
+
+// Route: Add member by admins
+router.post("/", async (req, res) => {
   let newMember = {
-  Email: req.body.email,
-  Password : req.body.password,
-  FirstName : req.body.firstName,
-  LastName : req.body.lastName,
-  ProfilePic : "", // work on this later
-
- // The remaining fields must be filled out/updated by users after the admin creates their accounts.
-  Skills : '',
-  Experience: '',
-  Education: '',
-  Certificates: '',
-  Status: "Approved",
-  LinkedInData: "",
-  Contact: ""
-
+    Email: req.body.email,
+    Password: req.body.password,
+    FirstName: req.body.firstName,
+    LastName: req.body.lastName,
+    ProfilePic: "", 
+// The remaining fields must be filled out/updated by users after the admin creates their accounts.
+    Skills: '',
+    Experience: '',
+    Education: '',
+    Certificates: '',
+    status: "Approved",
+    LinkedInData: "",
+    Contact: ""
   };
 
   let collection = await db.collection("members");
+  try {
+    let result = await collection.insertOne(newMember);
+    let insertedId = result.insertedId;
 
-  let result = await collection.insertOne(newMember);
-  let insertedId = result.insertedId
+    // Send welcome email after successful insertion
+    sendEmail(req.body.email, "Welcome to Our Platform", `Hi ${req.body.firstName}, welcome to our platform. Your account has been created successfully by admin.`);
 
-  res.send({id: insertedId}).status(200);
-
-})
+    res.send({id: insertedId}).status(201);
+  } catch (error) {
+    console.log("Error creating connection:", error);
+    res.status(500).send("Internal Server Error");
+  }
+});
 
 
 
