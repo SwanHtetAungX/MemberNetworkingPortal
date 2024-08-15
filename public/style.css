@@ -1,0 +1,25 @@
+/* SideNavigationBar.css */
+.logo {
+    text-align: center;
+    color: #fff;
+    font-size: 24px;
+    font-weight: bold;
+  }
+  
+  .ant-menu-item {
+    display: flex;
+    align-items: center;
+  }
+  
+  .ant-menu-item svg {
+    margin-right: 8px;
+  }
+  
+
+*{
+    margin: 0;
+    padding: 0;
+}
+
+
+
