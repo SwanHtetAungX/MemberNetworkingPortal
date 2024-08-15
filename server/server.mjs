@@ -1,8 +1,11 @@
-// Import required modules and components
+
 import express from "express";
 import cors from "cors";
 import members from "./routes/member.mjs";
 import connection from "./routes/connections.mjs"; 
+import admin from "./routes/admin.mjs"
+import dotenv from "dotenv";
+dotenv.config(); 
 
 // Define the port number
 const PORT = process.env.PORT || 5050;
@@ -17,12 +20,14 @@ app.use(cors());
 app.use(express.json());
 
 // Use the '/members' route module for handling member-related requests
+
 app.use("/members", members);
 app.use("/connection", connection);
+app.use("/admin", admin)
 // Start the server and listen on the port
 app.listen(PORT, () => {
   console.log(`Server is running on port: http://localhost:${PORT}`);
-});
+})
 
 // Export the Express app
 export default app;
