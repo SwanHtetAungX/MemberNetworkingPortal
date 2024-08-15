@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { jwtDecode } from 'jwt-decode';  
 import '../css/form.css';
 import { useNavigate } from 'react-router-dom';
 
@@ -12,7 +13,7 @@ function TwoFactorAuth({ email }) {
         e.preventDefault();
         console.log("Submitting 2FA Code:", twofaCode); // Debugging line
         try {
-            const response = await fetch('/testing/verify-2fa', {
+            const response = await fetch('http://localhost:5050/members/verify-2fa', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ Email: email, twofaCode }),
@@ -21,10 +22,14 @@ function TwoFactorAuth({ email }) {
             if (response.ok) {
                 const data = await response.json();
                 localStorage.setItem('authToken', data.token);
-                console.log("Verification Successful:", data.token); // Debugging line
+                console.log("Verification Successful:", data.token); 
+                // Decode token to extract the userId
+                 const decoded = jwtDecode(data.token);
+                const userId = decoded.id;  
+                sessionStorage.setItem('userId', userId);  
+
                 setMessage('Login successful!');
-                sessionStorage.setItem('token', data.token);
-                
+                navigate('/dashboard'); // Navigate to dashboard or another route
             } else {
                 const errorData = await response.text();
                 console.log("Verification Failed:", errorData); // Debugging line

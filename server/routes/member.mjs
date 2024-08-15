@@ -12,7 +12,7 @@ import Papa from "papaparse";
 dotenv.config();
 
 const router = express.Router();
-
+const JWT_SECRET="your-jwt-secret-key"
 // Nodemailer setup
 const transporter = nodemailer.createTransport({
     service: 'gmail',
@@ -25,7 +25,7 @@ const transporter = nodemailer.createTransport({
 // Function to send 2FA code
 const send2FACode = async (email, code) => {
     await transporter.sendMail({
-        from: membernetworkingportal@gmail.com,
+        from: "membernetworkingportal@gmail.com",
         to: email,
         subject: 'Networking Portal OTP',
         text: `Your OTP is: ${code}`,
@@ -154,7 +154,7 @@ router.post("/verify-2fa", async (req, res) => {
         await collection.updateOne({ _id: user._id }, { $set: user });
 
         // Generate JWT token
-        const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+        const token = jwt.sign({ id: user._id }, JWT_SECRET, { expiresIn: '1h' });
         res.status(200).json({ token });
     } catch (error) {
         console.error(error);

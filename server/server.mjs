@@ -8,7 +8,7 @@ import dotenv from "dotenv";
 dotenv.config(); 
 
 // Define the port number
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 5050;
 
 // Create an instance of the Express application
 const app = express();
@@ -27,7 +27,7 @@ app.use("/admin", admin)
 // Start the server and listen on the port
 app.listen(PORT, () => {
   console.log(`Server is running on port: http://localhost:${PORT}`);
-
+})
 
 // Export the Express app
 export default app;

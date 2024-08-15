@@ -7,7 +7,7 @@ import dotenv from "dotenv";
 dotenv.config();
 
 const router = express.Router();
-
+const JWT_SECRET="your-jwt-secret-key"
 // POST /admin/login - Admin Login route
 router.post('/login', async (req, res) => {
     try {
@@ -26,7 +26,7 @@ router.post('/login', async (req, res) => {
         }
 
         // Generate JWT token for admin
-        const token = jwt.sign({ id: admin._id, role: 'admin' }, process.env.JWT_SECRET, { expiresIn: '1h' });
+        const token = jwt.sign({ id: admin._id, role: 'admin' }, JWT_SECRET, { expiresIn: '1h' });
         res.status(200).json({ token });
     } catch (error) {
         console.error(error);
