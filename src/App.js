@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route,useLocation } from 'react-router-dom';
 import { Layout } from 'antd';
@@ -10,7 +11,9 @@ import ConnectionPage from './pages/ConnectionPage';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 import '../src/css/global.css';
+import "./App.css";
 import Landing from './components/landing';
+import ProfilePage from "./components/profilePage";
 import Navbar from './components/navbar';
 import Footer from './components/footer';
 import SignUp from './components/sign-up';
@@ -38,6 +41,7 @@ const AppLayout = () => {
               <Route path="/admin-login" element={<AdminLogin />} />
               <Route path="/verify-2fa" element={<TwoFactorAuth />} />
               <Route path="/signup" element={<SignUp />} />
+               <Route path="/profilePage/:id" element={<ProfilePage />} />
             </Routes>
                <Footer />
           </Content>
@@ -59,4 +63,5 @@ const ConditionalSidebar = () => {
 };
 
 export default AppLayout;
+
 

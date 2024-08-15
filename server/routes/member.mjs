@@ -12,7 +12,8 @@ import Papa from "papaparse";
 dotenv.config();
 
 const router = express.Router();
-const JWT_SECRET="your-jwt-secret-key"
+const JWT_SECRET = process.env.JWT_SECRET || "your-jwt-secret-key";
+
 // Nodemailer setup
 const transporter = nodemailer.createTransport({
     service: 'gmail',
@@ -35,7 +36,7 @@ const send2FACode = async (email, code) => {
 // Function to send general emails
 const sendEmail = async (email, subject, text) => {
     const mailOptions = {
-        from: process.env.EMAIL_USER,
+        from: 'membernetworkingportal@gmail.com',
         to: email,
         subject: subject,
         text: text,
@@ -164,7 +165,36 @@ router.post("/verify-2fa", async (req, res) => {
 
 // Storage for multer
 const storage = multer.memoryStorage();
-const upload = multer({ storage }).array("files");
+const upload = multer({ storage });
+
+// PATCH /:id/ProfilePic - Upload Profile Picture
+router.patch("/:id/ProfilePic", upload.single("profilePic"), async (req, res) => {
+    try {
+        let collection = await db.collection("members");
+        const query = { _id: new ObjectId(req.params.id) };
+
+        if (!req.file) {
+            return res.status(400).send("No file uploaded");
+        }
+
+        const base64Image = req.file.buffer.toString("base64");
+        const imageType = req.file.mimetype; // e.g., 'image/png'
+        const base64String = `data:${imageType};base64,${base64Image}`;
+
+        const update = {
+            $set: {
+                ProfilePic: base64String,
+            },
+        };
+
+        let result = await collection.updateOne(query, update);
+
+        res.status(200).send(result);
+    } catch (error) {
+        console.error("Error uploading profile picture:", error);
+        res.status(500).send("Internal Server Error");
+    }
+});
 
 // Function to convert CSV to JSON
 const convertCSVtoJSON = async (csvBuffer) => {
@@ -251,7 +281,7 @@ router.patch("/:id/approve", async (req, res) => {
 
     const query = { _id: new ObjectId(req.params.id) };
     const update = { $set: { status: "Approved" } };
-    let result = await collection.updateOne(query, update)
+    let result = await collection.updateOne(query, update);
     if (result.modifiedCount === 1) {
         const user = await collection.findOne(query);
         sendEmail(user.Email, "Account Status", "Congratulations! Your account has been approved.");
@@ -272,7 +302,7 @@ router.patch("/:id/suspend", async (req, res) => {
 
     const update = { $set: { status: newStatus } };
 
-    let result = await collection.updateOne(query, update)
+    let result = await collection.updateOne(query, update);
     if (result.modifiedCount === 1) {
         // Prepare the email message based on the new status
         const emailSubject = `Account Status Change Notification`;
@@ -318,7 +348,7 @@ router.post("/", async (req, res) => {
 
 // Upload and process LinkedIn data
 //postman usage: form-data, key: files, type: file
-router.patch("/:id/upload", upload, async (req, res) => {
+router.patch("/:id/upload", upload.array("files"), async (req, res) => {
     try {
         let collection = await db.collection("members");
         const query = { _id: new ObjectId(req.params.id) };
