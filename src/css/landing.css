@@ -1,0 +1,36 @@
+/* landing.css */
+
+.container-custom {
+    padding: 50px; /* Adjust the padding value as needed */
+}
+
+.text-custom {
+    color: #5D4A7C;
+    text-align: center;
+}
+
+.btn-custom {
+    background-color: #5D4A7C;
+    color: white;
+    width: 150px;
+    height: 40px;
+    border: none;
+    border-radius: 25px;
+}
+
+.btn-custom:hover {
+    background-color: #4B3A67;
+    color: white; 
+}
+
+.image-section {
+    text-align: right;
+}
+
+.text-section {
+    margin-top: 30px;
+}
+
+.buttons-section {
+    margin-top: 50px;
+}
