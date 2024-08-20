@@ -452,6 +452,7 @@ router.patch("/:id/update", async (req, res) => {
 
           res.status(200).send(result);
       }
+
   } catch (error) {
       console.error("Error updating user details:", error);
       res.status(500).send("Internal Server Error");
