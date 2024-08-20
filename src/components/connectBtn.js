@@ -33,7 +33,7 @@ const ConnectBtn = () => {
   const handleRequestConnect = async () => {
     try {
       const payload = {
-        userID1,
+        userID1
       };
 
       const response = await fetch(
@@ -56,6 +56,7 @@ const ConnectBtn = () => {
     } catch (error) {
       console.error("Failed to send connection request:", error);
       message.error("Failed to send connection request.");
+      console.log("userID1:", userID1, "userID2:", userID2);
     }
   };
 

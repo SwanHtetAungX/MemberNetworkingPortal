@@ -26,10 +26,13 @@ function TwoFactorAuth({ email }) {
                 // Decode token to extract the userId
                  const decoded = jwtDecode(data.token);
                 const userId = decoded.id;  
-                sessionStorage.setItem('userId', userId);  
+                sessionStorage.setItem('id', userId);  
 
                 setMessage('Login successful!');
                 navigate('/dashboard'); // Navigate to dashboard or another route
+
+                navigate(`/profilePage/${userId}`);
+        
             } else {
                 const errorData = await response.text();
                 console.log("Verification Failed:", errorData); // Debugging line

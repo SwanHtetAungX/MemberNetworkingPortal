@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import '../css/form.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
@@ -10,6 +10,7 @@ function Login() {
     const [formData, setFormData] = useState({ Email: '', Password: '' });
     const [error, setError] = useState('');
     const [show2FA, setShow2FA] = useState(false); // State to control 2FA modal visibility
+    const navigate = useNavigate(); // Initialize useNavigate hook
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -27,6 +28,7 @@ function Login() {
             if (response.ok) {
                 const data = await response.json();
                 localStorage.setItem('authToken', data.token); // Store token
+                sessionStorage.setItem('userId', data.userId); // Store user id
                 console.log('Token:', data.token);
                 setShow2FA(true); // Show 2FA modal
             } else {
@@ -38,7 +40,11 @@ function Login() {
         }
     };
 
-    const handleClose2FA = () => setShow2FA(false); // Close 2FA modal
+    const handleClose2FA = () => {
+        setShow2FA(false); // Close 2FA modal
+
+       
+    };
 
     return (
         <div className="form-container d-flex align-items-center justify-content-center min-vh-100">

@@ -49,6 +49,32 @@ const sendEmail = async (email, subject, text) => {
     }
 };
 
+router.get("/search", async (req, res) => {
+    try {
+        const { query } = req.query;
+        if (!query) {
+            return res.status(400).send("Search query is required");
+        }
+
+        let collection = await db.collection("members");
+        let results = await collection
+            .find({
+                status: "Approved", // Only search approved members
+                $or: [
+                    { FirstName: { $regex: query, $options: "i" } },
+                    { LastName: { $regex: query, $options: "i" } },
+                ],
+            })
+            .project({ FirstName: 1, LastName: 1, ProfilePic: 1 })
+            .toArray();
+
+        res.status(200).send(results);
+    } catch (error) {
+        console.error("Error searching members:", error);
+        res.status(500).send("Internal Server Error");
+    }
+});
+
 // POST /register - Registration route
 router.post("/register", async (req, res) => {
     try {
@@ -348,7 +374,7 @@ router.post("/", async (req, res) => {
 
 // Upload and process LinkedIn data
 //postman usage: form-data, key: files, type: file
-router.patch("/:id/upload", upload.array("files"), async (req, res) => {
+router.patch("/:id/upload", upload.array("files[]"), async (req, res) => {
     try {
         let collection = await db.collection("members");
         const query = { _id: new ObjectId(req.params.id) };
@@ -393,47 +419,49 @@ postman usage: {
 }
 */
 router.patch("/:id/update", async (req, res) => {
-    try {
-        let collection = await db.collection("members");
-        const query = { _id: new ObjectId(req.params.id) };
+  try {
+      let collection = await db.collection("members");
+      const query = { _id: new ObjectId(req.params.id) };
 
-        const { field, details } = req.body;
+      const { field, details } = req.body;
 
-        if (field === "Password" || field === "ProfilePic") {
-            const update = {
-                $set: {
-                    [field]: details,
-                },
-            };
-            let result = await collection.updateOne(query, update);
+      if (field === "Password" || field === "ProfilePic") {
+          const update = {
+              $set: {
+                  [field]: details,
+              },
+          };
+          let result = await collection.updateOne(query, update);
 
-            res.status(200).send(result);
-        } else {
-            const update = {
-                $push: {
-                    [field]: details,
-                },
-            };
-            let result = await collection.updateOne(query, update);
+          res.status(200).send(result);
+      } else if (field === "Profile" || field === "Bio") {
+          // Construct an update object for all the profile fields
+          const update = {
+              $set: details,  // Since details is an object with all profile fields
+          };
+          let result = await collection.updateOne(query, update);
 
-            res.status(200).send(result);
-        }
-    } catch (error) {
-        console.error("Error updating user details:", error);
-        res.status(500).send("Internal Server Error");
-    }
+          res.status(200).send(result);
+      } else {
+          const update = {
+              $push: {
+                  [field]: details,
+              },
+          };
+          let result = await collection.updateOne(query, update);
+
+          res.status(200).send(result);
+      }
+  } catch (error) {
+      console.error("Error updating user details:", error);
+      res.status(500).send("Internal Server Error");
+  }
 });
 
-// Update/remove user details
-/*
-Postman
-{
-    "field": "Positions",
-    "details": {
-        "Company Name": "New Company"
-    }
-}
-*/
+
+
+
+
 router.patch("/:id/remove", async (req, res) => {
     try {
         let collection = await db.collection("members");

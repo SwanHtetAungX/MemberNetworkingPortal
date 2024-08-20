@@ -1,56 +1,113 @@
-import React from 'react';
-import '../css/navbar.css';
-import 'bootstrap/dist/css/bootstrap.min.css';
-import 'bootstrap-icons/font/bootstrap-icons.css';
+import React, { useState } from "react";
+import { Layout, Menu, Input, Row, Col, Typography, Drawer, Button } from "antd";
+import { HomeOutlined, UserOutlined, TeamOutlined, BellOutlined, SearchOutlined, MenuOutlined } from "@ant-design/icons";
+import { Link } from "react-router-dom";
+import axios from "axios";
+import SearchResults from "./SearchResult";
 
-function Navbar() {
-    return (
-        <nav className="navbar navbar-expand-lg navbar-light">
-            <div className="container-fluid">
-                <a className="navbar-brand" href="/home">Network.com</a>
+const { Header } = Layout;
+const { Title } = Typography;
 
-                <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                    <span className="navbar-toggler-icon"></span>
-                </button>
+const Navbar = () => {
+  const [visible, setVisible] = useState(false);
+  const [screenSize, setScreenSize] = useState(window.innerWidth);
+  const [searchResults, setSearchResults] = useState([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [showResults, setShowResults] = useState(false); // State to manage the visibility of search results
 
-                <div className="collapse navbar-collapse" id="navbarNav">
-                    <form className="d-flex search-spacing mx-auto" style={{ width: '400px' }}>
-                        <input className="form-control me-2" type="search" placeholder="Who are you looking for?" aria-label="Search" />
-                        <button className="btn btn-outline-success" type="submit">
-                            <i className="bi bi-search"></i>
-                        </button>
-                    </form>
-                    
-                    <ul className="navbar-nav ms-auto">
-                        <li className="nav-item text-center">
-                            <a className="nav-link" href="/home">
-                                <i className="bi bi-house-fill"></i><br />
-                                Home
-                            </a>
-                        </li>
-                        <li className="nav-item text-center">
-                            <a className="nav-link" href="/network">
-                                <i className="bi bi-people-fill"></i><br />
-                                Network
-                            </a>
-                        </li>
-                        <li className="nav-item text-center">
-                            <a className="nav-link" href="/notifications">
-                                <i className="bi bi-bell-fill"></i><br />
-                                Notifications
-                            </a>
-                        </li>
-                        <li className="nav-item text-center">
-                            <a className="nav-link" href="/profile">
-                                <i className="bi bi-person-fill"></i><br />
-                                Profile
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </nav>
-    );
-}
+  const handleSearch = async (e) => {
+    const query = e.target.value;
+    setSearchQuery(query);
+    if (query) {
+      try {
+        const response = await axios.get(`http://localhost:5050/members/search`, {
+          params: { query },
+        });
+        setSearchResults(response.data);
+        setShowResults(true); // Show results when there is a query
+      } catch (error) {
+        console.error("Error fetching search results:", error);
+      }
+    } else {
+      setSearchResults([]);
+      setShowResults(false); // Hide results if the query is cleared
+    }
+  };
+
+  const handleBlur = () => {
+    // Delay hiding to allow click on the result
+    setTimeout(() => {
+      setShowResults(false);
+      setSearchQuery(""); // Clear the search text after unfocus
+    }, 200);
+  };
+
+  const showDrawer = () => {
+    setVisible(true);
+  };
+
+  const onClose = () => {
+    setVisible(false);
+  };
+
+  const menu = (
+    <Menu 
+      mode={screenSize <= 768 ? "vertical" : "horizontal"}
+      defaultSelectedKeys={['1']}
+      style={{ borderBottom: "none", width: screenSize <= 768 ? '100%' : 'auto', margin: 0 }}
+    >
+      <Menu.Item key="1" icon={<HomeOutlined />} style={{ margin: 0,paddingLeft: "28px"}}>
+        <Link to="/" />
+      </Menu.Item>
+      <Menu.Item key="2" icon={<UserOutlined />} style={{ margin: 0,paddingLeft: "28px"}}>
+        <Link to={`/ProfilePage/${sessionStorage.getItem('id')}`} />
+      </Menu.Item>
+      <Menu.Item key="3" icon={<TeamOutlined />} style={{ margin: 0,paddingLeft: "28px" }} >
+        <Link to={"/connection"} />
+      </Menu.Item>
+      <Menu.Item key="4" icon={<BellOutlined />} style={{ margin: 0,paddingLeft: "28px" }} >
+        <Link to={"/notification"} />
+      </Menu.Item>
+    </Menu>
+  );
+
+  return (
+    <Header style={{ backgroundColor: "white", padding: "0 20px", lineHeight: '64px', position: 'relative', zIndex: 1000 }}>
+      <Row justify="space-between" align="middle">
+        <Col>
+          <Title level={4} style={{ marginBottom: 0, color: "#1890ff", fontSize: '20px' }}>
+            Network.com
+          </Title>
+        </Col>
+        <Col flex="auto" style={{ margin: "0 24px", position: 'relative' }}>
+          <Input
+            prefix={<SearchOutlined style={{ color: "rgba(0,0,0,.25)" }} />}
+            placeholder="Search..."
+            value={searchQuery}
+            onChange={handleSearch}
+            onBlur={handleBlur} // Hide search results and clear text on blur
+            onFocus={() => setShowResults(true)} // Show search results on focus
+            onPressEnter={handleSearch}
+          />
+          {showResults && searchResults.length > 0 && <SearchResults results={searchResults} />}
+        </Col>
+        {screenSize > 768 ? (
+          <Col style={{flex: 'none'}}>{menu}</Col> 
+        ) : (
+          <Button type="text" icon={<MenuOutlined />} onClick={showDrawer} />
+        )}
+      </Row>
+      <Drawer
+        title="Menu"
+        placement="right"
+        onClick={onClose}
+        onClose={onClose}
+        visible={visible}
+      >
+        {menu}
+      </Drawer>
+    </Header>
+  );
+};
 
 export default Navbar;

@@ -27,6 +27,7 @@ const AppLayout = () => {
   return (
     <Router>
       <Layout style={{ minHeight: '100vh' }}>
+        <ConditionaNavBar />
         <ConditionalSidebar />
         <Layout>
           <Content style={{ padding: '24px', margin: 0, minHeight: 280 }}>
@@ -41,10 +42,11 @@ const AppLayout = () => {
               <Route path="/admin-login" element={<AdminLogin />} />
               <Route path="/verify-2fa" element={<TwoFactorAuth />} />
               <Route path="/signup" element={<SignUp />} />
-               <Route path="/profilePage/:id" element={<ProfilePage />} />
+              <Route path="/profilePage/:id" element={<ProfilePage />} />
             </Routes>
-               <Footer />
+               
           </Content>
+          <Footer />
         </Layout>
       </Layout>
     </Router>
@@ -53,14 +55,24 @@ const AppLayout = () => {
 
 // Conditional sidebar component
 const ConditionalSidebar = () => {
-  const location = useLocation();  // Now useLocation is called within the Router context
+  const location = useLocation(); 
 
   // Conditionally render the sidebar based on the path
-  if (location.pathname === '/notification' || location.pathname=== '/connection') {
+  if (location.pathname === '/admin-profile' || location.pathname=== '/view-member' || location.pathname==="/add-member") {
+    return <SideNavigationBar />;
+  }
+  return null;
+};
+
+const ConditionaNavBar = () => {
+  const location = useLocation();
+
+  if (location.pathname === '/login' || location.pathname === '/signup' || location.pathname === '/admin-login' || location.pathname === '/admin-profile' || location.pathname === '/view-member' || location.pathname === '/add-member' || location.pathname === '/'){
     return null;
   }
-  return <SideNavigationBar />;
-};
+  return <Navbar />;
+
+}
 
 export default AppLayout;
 

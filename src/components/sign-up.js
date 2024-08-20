@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+
 import '../css/form.css'; // Make sure this CSS file is up-to-date
 
 const Register = () => {

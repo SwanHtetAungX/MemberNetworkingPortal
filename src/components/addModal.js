@@ -1,15 +1,15 @@
 import React from "react";
 import { Modal, Form, Input, message } from "antd";
 import { useForm } from "antd/es/form/Form";
-
 const AddModal = ({
-  id,
   modalContext,
   addModalOpen,
   setAddModalOpen,
   profileData,
 }) => {
   const [form] = useForm();
+
+  const id = sessionStorage.getItem('id');
 
   const handleAdd = async () => {
     try {
@@ -18,23 +18,30 @@ const AddModal = ({
         field: modalContext,
         details: values,
       };
-
-      await fetch(`http://localhost:5050/members/${id}/update`, {
+  
+      const response = await fetch(`http://localhost:5050/members/${id}/update`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(payload),
       });
-
+  
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+  
+      await response.json();
       message.success("Data added successfully.");
       setAddModalOpen(false);
       form.resetFields();
-      window.location.reload();
+      window.location.reload()
     } catch (error) {
       console.error("Failed to add data:", error);
+      message.error('Failed to update data. Please try again.');
     }
   };
+  
 
   const renderFormFields = () => {
     switch (modalContext) {
@@ -44,7 +51,7 @@ const AddModal = ({
             <Form.Item
               name="FirstName"
               label="First name"
-              initialValue={[profileData.FirstName]}
+              initialValue={profileData.FirstName}
               rules={[
                 {
                   required: true,
@@ -97,7 +104,7 @@ const AddModal = ({
             <Form.Item
               name="Contact"
               label="Your contact"
-              initialValue={[profileData.Location]}
+              initialValue={[profileData.Contact]}
             >
               <Input />
             </Form.Item>
@@ -113,7 +120,7 @@ const AddModal = ({
             <Input />
           </Form.Item>
         );
-      case "Experience":
+      case "Positions":
         return (
           <>
             <Form.Item

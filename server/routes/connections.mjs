@@ -37,20 +37,49 @@ const sendEmail = (to, subject, text) => {
 router.get("/:id", async (req, res) => {
   try {
     let collection = await db.collection("connections");
+    let memberCollection = await db.collection("members");
 
+    // Get all pending connection requests for the user
     let results = await collection
-      .find({ userID1: req.params.id, status: "Pending" })
+      .find({ userID2: req.params.id, status: "Pending" })
       .toArray();
-    res.send(results).status(200);
+
+    // Fetch the details of the users who sent the connection requests
+    const requestsWithDetails = await Promise.all(
+      results.map(async (request) => {
+        const user = await memberCollection.findOne({ _id: new ObjectId(request.userID1) });
+        if (user) {
+          return {
+            ...request,
+            FirstName: user.FirstName,
+            LastName: user.LastName,
+            Email: user.Email,
+            ProfilePic: user.ProfilePic,
+          };
+        }
+        return request;
+      })
+    );
+
+    res.status(200).send(requestsWithDetails);
   } catch (error) {
     console.error("Error fetching connection requests:", error);
     res.status(500).send("Internal Server Error");
   }
 });
 
+
 // Request connection
 router.post("/:id", async (req, res) => {
   try {
+    // Fetch the details of the user who is sending the request
+    const sender = await db.collection("members").findOne({ _id: new ObjectId(req.body.userID1) });
+    if (!sender) {
+      return res.status(404).send("Sender not found");
+    }
+    
+    const senderFullName = `${sender.FirstName} ${sender.LastName}`;
+    
     let newConnection = {
       userID1: req.body.userID1,
       userID2: req.params.id,
@@ -66,18 +95,22 @@ router.post("/:id", async (req, res) => {
 
     // Create notification for the recipient
     let notification = {
-      userID: req.body.userID2,
+      userID: req.params.id,
       type: "request",
-      message: `User ${req.body.userID1} has sent you a connection request.`,
+      message: `User ${senderFullName} has sent you a connection request.`,
       createdAt: new Date()
     };
     await notificationCollection.insertOne(notification);
     
     // Send email notification
-    const user = await db.collection("members").findOne({ _id: new ObjectId(req.body.userID2) });
-    const userEmail = user.Email;
+    const recipient = await db.collection("members").findOne({ _id: new ObjectId(req.params.id) });
+    if (!recipient) {
+      return res.status(404).send("Recipient not found");
+    }
+    
+    const recipientEmail = recipient.Email;
 
-    sendEmail(userEmail, "Connection Request", `${req.body.userID1} has sent you a connection request.`);
+    sendEmail(recipientEmail, "Connection Request", `${senderFullName} has sent you a connection request.`);
 
     res.status(201).send("Request Sent");
   } catch (error) {
@@ -86,12 +119,28 @@ router.post("/:id", async (req, res) => {
   }
 });
 
+
 // Accept connection
 router.patch("/:id", async (req, res) => {
   try {
-    let collection = await db.collection("connections");
-    let notificationCollection = await db.collection('notifications');
-    const query = { userID1: req.body.userID1, userID2: req.params.id };
+    const userId = req.params.id;
+    const requesterId = req.body.userID1;
+
+    // Find the user who accepted the connection request
+    const accepter = await db.collection("members").findOne({ _id: new ObjectId(userId) });
+    if (!accepter) {
+      return res.status(404).send("User not found");
+    }
+
+    // Find the user who sent the connection request
+    const requester = await db.collection("members").findOne({ _id: new ObjectId(requesterId) });
+    if (!requester) {
+      return res.status(404).send("Requester not found");
+    }
+
+    const collection = await db.collection("connections");
+    const notificationCollection = await db.collection('notifications');
+    const query = { userID1: requesterId, userID2: userId };
 
     const update = {
       $set: {
@@ -100,21 +149,24 @@ router.patch("/:id", async (req, res) => {
       },
     };
 
-    let result = await collection.updateOne(query, update);
+    const result = await collection.updateOne(query, update);
 
-    // Create notification for the requester
+    // Create notification for the requester with names
+    const notificationMessage = `${accepter.FirstName} ${accepter.LastName} has accepted your connection request.`;
     let newNotification = {
-      userID: req.body.userID1,
+      userID: requesterId,
       type: "Accept",
-      message: `${req.params.id} has accepted your connection request.`,
+      message: notificationMessage,
       createdAt: new Date()
     };
 
     await notificationCollection.insertOne(newNotification);
 
-    const user = await db.collection("members").findOne({ _id: new ObjectId(req.body.userID1) });
-    const userEmail = user.Email;
-    sendEmail(userEmail, "Connection Accepted", `${req.params.id} has accepted your connection request.`);
+    // Send email notification
+    const requesterEmail = requester.Email;
+    const emailSubject = "Connection Accepted";
+    const emailBody = notificationMessage;
+    sendEmail(requesterEmail, emailSubject, emailBody);
 
     res.status(200).send(result);
   } catch (error) {

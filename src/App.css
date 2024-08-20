@@ -1,13 +1,15 @@
 .ant-card {
-    background-color: #F9FBFF; /* Replace with your desired color */
+    background-color: #F9FBFF; 
   }
 
-.ant-layout{
-    background-color: white;
 
-}
 
 
 .ant-typography.title2, .ant-typography.title3, .ant-typography.title4, .ant-typography.paragraph, .ant-list.item, .ant-btn {
     color:#372554
+}
+
+*{
+    margin:0;
+    padding:0
 }
