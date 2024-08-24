@@ -29,6 +29,7 @@ const ProfilePicModal = ({
 
     const formData = new FormData();
     formData.append("profilePic", file);
+    formData.append("field", "ProfilePic");
 
     setUploading(true);
 
@@ -46,7 +47,6 @@ const ProfilePicModal = ({
       })
       .finally(() => {
         setUploading(false);
-        window.location.reload();
       });
   };
 
@@ -59,6 +59,7 @@ const ProfilePicModal = ({
       setPreview(reader.result);
     };
     reader.readAsDataURL(file.originFileObj);
+    console.log(file);
 
     return false; // Prevent automatic upload
   };

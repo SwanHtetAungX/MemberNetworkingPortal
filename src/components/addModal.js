@@ -9,7 +9,7 @@ const AddModal = ({
 }) => {
   const [form] = useForm();
 
-  const id = sessionStorage.getItem('id');
+  const id = sessionStorage.getItem("id");
 
   const handleAdd = async () => {
     try {
@@ -18,30 +18,32 @@ const AddModal = ({
         field: modalContext,
         details: values,
       };
-  
-      const response = await fetch(`http://localhost:5050/members/${id}/update`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      });
-  
+
+      const response = await fetch(
+        `http://localhost:5050/members/${id}/update`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        }
+      );
+
       if (!response.ok) {
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
-  
+
       await response.json();
       message.success("Data added successfully.");
       setAddModalOpen(false);
       form.resetFields();
-      window.location.reload()
+      window.location.reload();
     } catch (error) {
       console.error("Failed to add data:", error);
-      message.error('Failed to update data. Please try again.');
+      message.error("Failed to update data. Please try again.");
     }
   };
-  
 
   const renderFormFields = () => {
     switch (modalContext) {
@@ -64,7 +66,7 @@ const AddModal = ({
             <Form.Item
               name="LastName"
               label="Last Name"
-              initialValue={[profileData.LastName]}
+              initialValue={profileData.LastName}
               rules={[
                 { required: true, message: "Please enter your last name" },
               ]}
@@ -74,7 +76,7 @@ const AddModal = ({
             <Form.Item
               name="JobTitle"
               label="Job Title"
-              initialValue={[profileData.JobTitle]}
+              initialValue={profileData.JobTitle}
               rules={[
                 { required: true, message: "Please enter your job title" },
               ]}
@@ -84,7 +86,7 @@ const AddModal = ({
             <Form.Item
               name="Department"
               label="Your Department"
-              initialValue={[profileData.Department]}
+              initialValue={profileData.Department}
               rules={[
                 {
                   required: true,
@@ -97,14 +99,14 @@ const AddModal = ({
             <Form.Item
               name="Location"
               label="Location"
-              initialValue={[profileData.Location]}
+              initialValue={profileData.Location}
             >
               <Input />
             </Form.Item>
             <Form.Item
               name="Contact"
               label="Your contact"
-              initialValue={[profileData.Contact]}
+              initialValue={profileData.Contact}
             >
               <Input />
             </Form.Item>

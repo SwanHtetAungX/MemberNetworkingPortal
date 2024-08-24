@@ -25,6 +25,9 @@ const UploadModal = ({
     fetch(`http://localhost:5050/members/${id}/upload`, {
       method: "PATCH",
       body: formData,
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
     })
       .then((res) => res.json())
       .then(() => {
@@ -37,7 +40,6 @@ const UploadModal = ({
       })
       .finally(() => {
         setUploading(false);
-        window.location.reload();
       });
   };
 

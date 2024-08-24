@@ -8,7 +8,6 @@ import {
   Card,
   Button,
   Typography,
-  List,
   Dropdown,
   Tooltip,
 } from "antd";
@@ -23,6 +22,7 @@ import UploadModal from "./uploadModal";
 import RemoveModal from "./removeModal";
 import ConnectBtn from "./connectBtn";
 import ProfilePicModal from "./profilePicModal";
+import YourActivity from "./yourActivityFeed";
 
 const { Content } = Layout;
 const { Title, Paragraph } = Typography;
@@ -92,7 +92,9 @@ const ProfilePage = () => {
 
   return (
     <Layout style={{ backgroundColor: "#f0f2f5", minHeight: "100vh" }}>
-      <Content style={{ padding: "20px 50px", maxWidth: "1200px", margin: "auto" }}>
+      <Content
+        style={{ padding: "20px 50px", maxWidth: "1200px", margin: "auto" }}
+      >
         <Card
           style={{
             marginTop: "20px",
@@ -164,91 +166,95 @@ const ProfilePage = () => {
 
         {/* Sections */}
         {[
-  { title: "About", content: profileData.Bio, context: "Bio" },
-  {
-    title: "Skills",
-    content: profileData.Skills.map(skill => skill.Name).join(", "),
-    context: "Skills",
-  },
-  {
-    title: "Experience",
-    content: profileData.Positions.map(position => (
-      <p key={position["Company Name"]}>
-        {position["Company Name"]}, {position.Title} (
-        {position["Started On"]} - {position["Finished On"] || "Present"})
-      </p>
-    )),
-    context: "Positions",
-  },
-  {
-    title: "Education",
-    content: profileData.Education.map(edu => (
-      <p key={edu["School Name"]}>
-        {edu["School Name"]}, {edu["Degree Name"]} ({edu["Start Date"]} - {edu["End Date"]})
-      </p>
-    )),
-    context: "Education",
-  },
-  {
-    title: "Certifications",
-    content: profileData.Certifications.map(cert => (
-      <p key={cert.Name}>
-        {cert.Name}, {cert.Authority} ({cert["Started On"]})
-      </p>
-    )),
-    context: "Certifications",
-  },
-].map((section, index) => (
-  <Card
-    key={index}
-    style={{
-      marginTop: "20px",
-      boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
-      borderRadius: "8px",
-    }}
-  >
-    <Row justify="space-between" align="middle">
-      <Col>
-        <Title level={4}>{section.title}</Title>
-      </Col>
-      {isOwner && (
-        <Col>
-          {section.context === "Bio" ? (
-            <Button
-              type="text"
-              icon={<EditFilled />}
-              onClick={() => {
-                setModalContext(section.context);
-                setAddModalOpen(true);
-              }}
-            />
-          ) : (
-            <>
-              <Button
-                type="text"
-                icon={<EditFilled />}
-                onClick={() => {
-                  setModalContext(section.context);
-                  setRemoveModalOpen(true);
-                }}
-              />
-              <Button
-                type="text"
-                icon={<PlusOutlined />}
-                onClick={() => {
-                  setModalContext(section.context);
-                  setAddModalOpen(true);
-                }}
-              />
-            </>
-          )}
-        </Col>
-      )}
-    </Row>
-    <Paragraph style={{ color: "#555", fontSize: "14px" }}>{section.content}</Paragraph>
-  </Card>
-))}
-
+          { title: "About", content: profileData.Bio, context: "Bio" },
+          {
+            title: "Skills",
+            content: profileData.Skills.map((skill) => skill.Name).join(", "),
+            context: "Skills",
+          },
+          {
+            title: "Experience",
+            content: profileData.Positions.map((position) => (
+              <p key={position["Company Name"]}>
+                {position["Company Name"]}, {position.Title} (
+                {position["Started On"]} -{" "}
+                {position["Finished On"] || "Present"})
+              </p>
+            )),
+            context: "Positions",
+          },
+          {
+            title: "Education",
+            content: profileData.Education.map((edu) => (
+              <p key={edu["School Name"]}>
+                {edu["School Name"]}, {edu["Degree Name"]} ({edu["Start Date"]}{" "}
+                - {edu["End Date"]})
+              </p>
+            )),
+            context: "Education",
+          },
+          {
+            title: "Certifications",
+            content: profileData.Certifications.map((cert) => (
+              <p key={cert.Name}>
+                {cert.Name}, {cert.Authority} ({cert["Started On"]})
+              </p>
+            )),
+            context: "Certifications",
+          },
+        ].map((section, index) => (
+          <Card
+            key={index}
+            style={{
+              marginTop: "20px",
+              boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
+              borderRadius: "8px",
+            }}
+          >
+            <Row justify="space-between" align="middle">
+              <Col>
+                <Title level={4}>{section.title}</Title>
+              </Col>
+              {isOwner && (
+                <Col>
+                  {section.context === "Bio" ? (
+                    <Button
+                      type="text"
+                      icon={<EditFilled />}
+                      onClick={() => {
+                        setModalContext(section.context);
+                        setAddModalOpen(true);
+                      }}
+                    />
+                  ) : (
+                    <>
+                      <Button
+                        type="text"
+                        icon={<EditFilled />}
+                        onClick={() => {
+                          setModalContext(section.context);
+                          setRemoveModalOpen(true);
+                        }}
+                      />
+                      <Button
+                        type="text"
+                        icon={<PlusOutlined />}
+                        onClick={() => {
+                          setModalContext(section.context);
+                          setAddModalOpen(true);
+                        }}
+                      />
+                    </>
+                  )}
+                </Col>
+              )}
+            </Row>
+            <Paragraph style={{ color: "#555", fontSize: "14px" }}>
+              {section.content}
+            </Paragraph>
+          </Card>
+        ))}
+        <YourActivity id={id} profileData={profileData} />
       </Content>
 
       <RemoveModal
