@@ -1,10 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Typography, Card, Row, Col, Avatar, Button } from "antd";
-import {
-  EllipsisOutlined,
-  HeartOutlined,
-  MessageOutlined,
-} from "@ant-design/icons";
+import { EllipsisOutlined, MessageOutlined } from "@ant-design/icons";
+import LikeBtn from "./likeBtn";
 
 const { Title, Paragraph } = Typography;
 
@@ -28,6 +25,7 @@ const YourActivity = ({ id, profileData }) => {
         const postsWithMedia = await Promise.all(
           postsData.map(async (post) => {
             if (post.mediaId) {
+              console.log(post);
               try {
                 const mediaResponse = await fetch(
                   `http://localhost:5050/posts/media/${post.mediaId}`
@@ -37,14 +35,10 @@ const YourActivity = ({ id, profileData }) => {
                     `Error fetching media: ${mediaResponse.statusText}`
                   );
                 }
-                console.log(mediaResponse);
+
                 const mediaBlob = await mediaResponse.blob();
                 const mediaType = mediaBlob.type;
                 const mediaUrl = URL.createObjectURL(mediaBlob);
-                console.log(mediaBlob);
-                console.log(mediaType);
-                console.log(mediaResponse.contentType);
-                console.log(mediaBlob);
 
                 return { ...post, mediaUrl, mediaType };
               } catch (error) {
@@ -125,7 +119,11 @@ const YourActivity = ({ id, profileData }) => {
                   Your browser does not support the video tag.
                 </video>
               )}
-              <Button type="text" icon={<HeartOutlined />} onClick={() => {}} />
+              <LikeBtn
+                likeStatus={post.likeStatus}
+                userId={id}
+                postId={post._id}
+              />
               <Button
                 type="text"
                 icon={<MessageOutlined />}
