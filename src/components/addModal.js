@@ -40,7 +40,7 @@ const AddModal = ({
       form.resetFields();
       window.location.reload();
     } catch (error) {
-      console.error("Failed to add data:", error);
+      console.log("Failed to add data:", error);
       message.error("Failed to update data. Please try again.");
     }
   };

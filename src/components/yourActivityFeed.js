@@ -1,13 +1,26 @@
 import React, { useEffect, useState } from "react";
-import { Typography, Card, Row, Col, Avatar, Button } from "antd";
+import {
+  Typography,
+  Card,
+  Row,
+  Col,
+  Avatar,
+  Dropdown,
+  Button,
+  message,
+} from "antd";
 import { EllipsisOutlined, MessageOutlined } from "@ant-design/icons";
 import LikeBtn from "./likeBtn";
+import CommentModal from "./commentsModal";
 
 const { Title, Paragraph } = Typography;
 
 const YourActivity = ({ id, profileData }) => {
   const [activityFeed, setActivityFeed] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [commentModalOpen, setCommentModalOpen] = useState(false);
+  const [selectedComments, setSelectedComments] = useState([]);
+  const [selectedPostId, setSelectedPostId] = useState("");
 
   useEffect(() => {
     const fetchPostsData = async () => {
@@ -25,7 +38,6 @@ const YourActivity = ({ id, profileData }) => {
         const postsWithMedia = await Promise.all(
           postsData.map(async (post) => {
             if (post.mediaId) {
-              console.log(post);
               try {
                 const mediaResponse = await fetch(
                   `http://localhost:5050/posts/media/${post.mediaId}`
@@ -65,6 +77,45 @@ const YourActivity = ({ id, profileData }) => {
     return <div>Loading...</div>;
   }
 
+  const handleDeletePost = async (postId) => {
+    fetch(`http://localhost:5050/posts/${id}/${postId}`, {
+      method: "DELETE",
+    })
+      .then((res) => res.json())
+      .then(() => {
+        message.success("Post deleted.");
+      })
+      .catch(() => {
+        message.error("Post Deletion failed.");
+      });
+  };
+
+  const items = [
+    {
+      key: "1",
+      label: (
+        <Button
+          type="text"
+          onClick={() => {
+            handleDeletePost(selectedPostId);
+          }}
+        >
+          Delete
+        </Button>
+      ),
+    },
+    {
+      key: "2",
+      label: <Button type="text">Report</Button>,
+    },
+  ];
+
+  const handleOpenComments = (comments, postId) => {
+    setSelectedComments(comments);
+    setSelectedPostId(postId);
+    setCommentModalOpen(true);
+  };
+
   return (
     <div>
       <Title level={2}>Your Activity</Title>
@@ -88,11 +139,15 @@ const YourActivity = ({ id, profileData }) => {
                 profileData.FirstName + " " + profileData.LastName,
               ]}
               extra={[
-                <Button
-                  type="text"
-                  icon={<EllipsisOutlined />}
-                  onClick={() => {}}
-                />,
+                <Dropdown menu={{ items }} placement="bottomRight" arrow>
+                  <Button
+                    type="text"
+                    icon={<EllipsisOutlined />}
+                    onClick={() => {
+                      setSelectedPostId(post._id);
+                    }}
+                  />
+                </Dropdown>,
               ]}
             >
               {post.mediaUrl && post.mediaType.startsWith("image") && (
@@ -127,7 +182,7 @@ const YourActivity = ({ id, profileData }) => {
               <Button
                 type="text"
                 icon={<MessageOutlined />}
-                onClick={() => {}}
+                onClick={() => handleOpenComments(post.comments, post._id)}
               />
               <Row>
                 <Paragraph>
@@ -138,6 +193,15 @@ const YourActivity = ({ id, profileData }) => {
           </Col>
         ))}
       </Row>
+
+      <CommentModal
+        commentModalOpen={commentModalOpen}
+        setCommentModalOpen={setCommentModalOpen}
+        comments={selectedComments}
+        id={id}
+        postId={selectedPostId}
+        username={`${profileData.FirstName} ${profileData.LastName}`}
+      />
     </div>
   );
 };

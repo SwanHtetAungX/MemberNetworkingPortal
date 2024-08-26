@@ -118,15 +118,11 @@ router.get("/media/:fileId", async (req, res) => {
 });
 
 // Delete post
-router.delete("/:authorId", async (req, res) => {
-  if (req.params.authorId !== req.body.authorId) {
-    return res.status(403).send("You are not authorized to delete this post");
-  }
-
-  const postId = new ObjectId(req.body.id);
+router.delete("/:authorId/:postId", async (req, res) => {
+  const postId = new ObjectId(req.params.postId);
 
   try {
-    // Find and delete media associated with the post
+    //find and delete media associated with the post
     const post = await db.collection("posts").findOne({ _id: postId });
     if (post && post.mediaId) {
       bucket.delete(post.mediaId, (err) => {
@@ -171,7 +167,7 @@ router.patch("/:authorId/:postId", async (req, res) => {
 });
 
 //add comment
-router.patch("/:userId/:postId", async (req, res) => {
+router.patch("/:userId/:postId/comment", async (req, res) => {
   try {
     const query = { _id: new ObjectId(req.params.postId) };
     const update = {
@@ -181,6 +177,7 @@ router.patch("/:userId/:postId", async (req, res) => {
           userId: req.params.userId,
           content: req.body.content,
           timestamp: formatDate(new Date()),
+          username: req.body.username,
         },
       },
     };
@@ -193,19 +190,13 @@ router.patch("/:userId/:postId", async (req, res) => {
 });
 
 //delete comment
-router.delete("/:userId/:postId", async (req, res) => {
-  const { authorId, userId, commentId } = req.body;
-  if (req.params.userId !== authorId && req.params.userId !== userId) {
-    return res
-      .status(403)
-      .send("You are not authorized to delete this comment");
-  }
+router.delete("/:userId/:postId/:commentId/comment", async (req, res) => {
   try {
     const query = { _id: new ObjectId(req.params.postId) };
     const update = {
       $pull: {
         comments: {
-          commentId: new ObjectId(commentId),
+          commentId: new ObjectId(req.params.commentId),
         },
       },
     };
@@ -223,9 +214,7 @@ router.patch("/:userId/:postId/like", async (req, res) => {
     const query = { _id: new ObjectId(req.params.postId) };
     const update = {
       $push: {
-        likes: {
-          userId: req.params.userId,
-        },
+        likes: req.params.userId,
       },
     };
     let result = await db.collection("posts").updateOne(query, update);
@@ -261,7 +250,7 @@ router.get("/yourActivity/:userId", async (req, res) => {
     const collection = await db.collection("posts");
     const results = await collection
       .find({
-        status: "Approved", // Only search approved members
+        status: "Approved", //only search approved posts
         authorId: req.params.userId,
       })
       .toArray();
@@ -305,6 +294,12 @@ router.get("/activityFeed/:userId", async (req, res) => {
         });
       });
     }
+
+    feedList.sort((a, b) => {
+      const dateComparison = new Date(b.timestamp) - new Date(a.timestamp);
+      if (dateComparison !== 0) return dateComparison; //sort by timestamp first
+      return b.likes.length - a.likes.length; //then sort likes
+    });
     res.status(200).send(feedList);
   } catch (error) {
     console.log("Error deleting comments", error);
