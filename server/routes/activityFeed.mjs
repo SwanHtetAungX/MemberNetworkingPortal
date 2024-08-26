@@ -162,7 +162,7 @@ router.patch("/:authorId/:postId", async (req, res) => {
       $set: content,
     };
 
-    let result = await db.updateOne(query, update);
+    let result = await db.collection("posts").updateOne(query, update);
     res.status(200).send(result);
   } catch (error) {
     console.log("Error updating user details:", error);
@@ -184,7 +184,7 @@ router.patch("/:userId/:postId", async (req, res) => {
         },
       },
     };
-    let result = await db.updateOne(query, update);
+    let result = await db.collection("posts").updateOne(query, update);
     res.status(200).send(result);
   } catch (error) {
     console.log("Error updating user details:", error);
@@ -209,7 +209,7 @@ router.delete("/:userId/:postId", async (req, res) => {
         },
       },
     };
-    let result = await db.updateOne(query, update);
+    let result = await db.collection("posts").updateOne(query, update);
     res.status(200).send(result);
   } catch (error) {
     console.log("Error deleting comments", error);
@@ -218,7 +218,7 @@ router.delete("/:userId/:postId", async (req, res) => {
 });
 
 //like
-router.patch("/:userId/:postId", async (req, res) => {
+router.patch("/:userId/:postId/like", async (req, res) => {
   try {
     const query = { _id: new ObjectId(req.params.postId) };
     const update = {
@@ -228,7 +228,7 @@ router.patch("/:userId/:postId", async (req, res) => {
         },
       },
     };
-    let result = await db.updateOne(query, update);
+    let result = await db.collection("posts").updateOne(query, update);
     res.status(200).send(result);
   } catch (error) {
     console.log("Error updating user details:", error);
@@ -237,7 +237,7 @@ router.patch("/:userId/:postId", async (req, res) => {
 });
 
 //unlike
-router.delete("/:userId/:id", async (req, res) => {
+router.delete("/:userId/:id/unlike", async (req, res) => {
   try {
     const query = { _id: new ObjectId(req.params.id) };
     const update = {
@@ -247,7 +247,7 @@ router.delete("/:userId/:id", async (req, res) => {
         },
       },
     };
-    let result = await db.updateOne(query, update);
+    let result = await db.collection("posts").updateOne(query, update);
     res.status(200).send(result);
   } catch (error) {
     console.log("Error deleting comments", error);
@@ -258,16 +258,27 @@ router.delete("/:userId/:id", async (req, res) => {
 //get your activity
 router.get("/yourActivity/:userId", async (req, res) => {
   try {
-    let collection = await db.collection("posts");
-    let results = await collection
+    const collection = await db.collection("posts");
+    const results = await collection
       .find({
         status: "Approved", // Only search approved members
         authorId: req.params.userId,
       })
       .toArray();
-    res.status(200).send(results);
+
+    const activityWithLikeStatus = await Promise.all(
+      results.map(async (post) => {
+        const likeStatus = await likeChecker(post._id, req.params.userId);
+        return {
+          ...post,
+          likeStatus: likeStatus,
+        };
+      })
+    );
+
+    res.status(200).send(activityWithLikeStatus);
   } catch (error) {
-    console.log("Error deleting comments", error);
+    console.log("Error retrieving your activity", error);
     res.status(500).send("Internal Server Error");
   }
 });
