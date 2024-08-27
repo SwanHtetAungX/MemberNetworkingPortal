@@ -26,6 +26,7 @@ const YourActivity = ({ id, profileData }) => {
     const fetchPostsData = async () => {
       try {
         // Fetch posts data
+        setLoading(true);
         const response = await fetch(
           `http://localhost:5050/posts/yourActivity/${id}`
         );
@@ -78,16 +79,26 @@ const YourActivity = ({ id, profileData }) => {
   }
 
   const handleDeletePost = async (postId) => {
-    fetch(`http://localhost:5050/posts/${id}/${postId}`, {
-      method: "DELETE",
-    })
-      .then((res) => res.json())
-      .then(() => {
+    try {
+      const response = await fetch(
+        `http://localhost:5050/posts/${id}/${postId}`,
+        {
+          method: "DELETE",
+        }
+      );
+
+      if (response.ok) {
         message.success("Post deleted.");
-      })
-      .catch(() => {
+
+        setActivityFeed((prevFeed) =>
+          prevFeed.filter((post) => post._id !== postId)
+        );
+      } else {
         message.error("Post Deletion failed.");
-      });
+      }
+    } catch (error) {
+      message.error("Post Deletion failed.");
+    }
   };
 
   const items = [

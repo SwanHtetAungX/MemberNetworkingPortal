@@ -53,10 +53,21 @@ const likeChecker = async (postId, userId) => {
   return false;
 };
 
+const authorMetadata = async (authorId) => {
+  let collection = db.collection("members");
+  let query = { _id: new ObjectId(authorId) };
+  let result = await collection.findOne(query, {
+    projection: { FirstName: 1, LastName: 1, ProfilePic: 1 },
+  });
+
+  return result;
+};
+
 // Upload post with media
 router.post("/:authorId", upload.single("media"), async (req, res) => {
   const authorId = req.params.authorId;
   const media = req.file ? req.file.buffer : null;
+  console.log(media);
 
   const newPost = {
     authorId,
@@ -231,9 +242,7 @@ router.delete("/:userId/:id/unlike", async (req, res) => {
     const query = { _id: new ObjectId(req.params.id) };
     const update = {
       $pull: {
-        likes: {
-          userId: req.params.userId,
-        },
+        likes: req.params.userId,
       },
     };
     let result = await db.collection("posts").updateOne(query, update);
@@ -258,9 +267,14 @@ router.get("/yourActivity/:userId", async (req, res) => {
     const activityWithLikeStatus = await Promise.all(
       results.map(async (post) => {
         const likeStatus = await likeChecker(post._id, req.params.userId);
+        const authorDetails = await authorMetadata(post.authorId);
+
         return {
           ...post,
           likeStatus: likeStatus,
+          FirstName: authorDetails.FirstName,
+          LastName: authorDetails.LastName,
+          ProfilePic: authorDetails.ProfilePic,
         };
       })
     );
@@ -274,9 +288,11 @@ router.get("/yourActivity/:userId", async (req, res) => {
 
 //get your activity feed
 router.get("/activityFeed/:userId", async (req, res) => {
-  const followingList = await following(req.params.userId);
-  followingList.push(req.params.userId);
   try {
+    const followingList = await following(req.params.userId);
+    followingList.push(req.params.userId);
+    console.log(followingList);
+
     const feedList = [];
 
     for (const userId of followingList) {
@@ -286,23 +302,30 @@ router.get("/activityFeed/:userId", async (req, res) => {
         authorId: userId,
       });
 
-      await results.forEach(async (post) => {
+      const postsArray = await results.toArray(); // Convert cursor to an array
+
+      for (const post of postsArray) {
         const likeStatus = await likeChecker(post._id, req.params.userId);
+        const authorDetails = await authorMetadata(post.authorId);
         feedList.push({
           ...post,
           likeStatus: likeStatus,
+          FirstName: authorDetails.FirstName,
+          LastName: authorDetails.LastName,
+          ProfilePic: authorDetails.ProfilePic,
         });
-      });
+      }
     }
 
     feedList.sort((a, b) => {
       const dateComparison = new Date(b.timestamp) - new Date(a.timestamp);
-      if (dateComparison !== 0) return dateComparison; //sort by timestamp first
-      return b.likes.length - a.likes.length; //then sort likes
+      if (dateComparison !== 0) return dateComparison; // Sort by timestamp first
+      return b.likes.length - a.likes.length; // Then sort by number of likes
     });
+
     res.status(200).send(feedList);
   } catch (error) {
-    console.log("Error deleting comments", error);
+    console.log("Error retrieving activity feed", error);
     res.status(500).send("Internal Server Error");
   }
 });
