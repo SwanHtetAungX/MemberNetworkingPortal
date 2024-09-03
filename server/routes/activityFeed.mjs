@@ -63,6 +63,108 @@ const authorMetadata = async (authorId) => {
   return result;
 };
 
+const reportChecker = async (postId) => {
+  try {
+    let collection = db.collection("posts");
+    let query = { _id: new ObjectId(postId) };
+    let result = await collection.findOne(query, {
+      projection: { reports: 1 },
+    });
+
+    const reports = result.reports;
+    if (reports.length === 10) {
+      await collection.deleteOne(query);
+    }
+  } catch (error) {
+    console.log("Error retrieving activity feed", error);
+  }
+};
+
+// Route: Approve the post by admin
+router.patch("/:postId/approve", async (req, res) => {
+  try {
+    let collection = await db.collection("posts");
+
+    const query = { _id: new ObjectId(req.params.postId) };
+    const update = { $set: { status: "Approved" } };
+    let result = await collection.updateOne(query, update);
+
+    res.send(result).status(200);
+  } catch (error) {
+    console.log("Error retrieving activity feed", error);
+    res.status(500).send("Internal Server Error");
+  }
+});
+
+// Route: deny the posts by admin
+router.delete("/:postId/deny", async (req, res) => {
+  let collection = await db.collection("posts");
+
+  const query = { _id: new ObjectId(req.params.postId) };
+
+  let result = await collection.deleteOne(query);
+
+  res.send(result).status(200);
+});
+
+// Route: To get pending posts
+router.get("/pending", async (req, res) => {
+  try {
+    let collection = await db.collection("posts");
+    let results = await collection.find({ status: "Pending" }).toArray();
+
+    if (results.length === 0) {
+      res.status(404).send({ message: "No pending posts found." });
+    } else {
+      const postsWithMetadata = await Promise.all(
+        results.map(async (post) => {
+          const authorDetails = await authorMetadata(post.authorId);
+          return {
+            ...post,
+            Author: authorDetails.FirstName + " " + authorDetails.LastName,
+            AuthorEmail: authorDetails.email,
+          };
+        })
+      );
+
+      res.status(200).send(postsWithMetadata);
+    }
+  } catch (error) {
+    console.log("Error retrieving pending posts:", error);
+    res.status(500).send("Internal Server Error");
+  }
+});
+
+// Route: To get reported posts
+router.get("/reported", async (req, res) => {
+  try {
+    let collection = await db.collection("posts");
+    let results = await collection
+      .find({ reports: { $exists: true, $ne: [] } })
+      .toArray();
+
+    if (results.length === 0) {
+      res.status(404).send({ message: "No reported posts found." });
+    } else {
+      const postsWithMetadata = await Promise.all(
+        results.map(async (post) => {
+          const authorDetails = await authorMetadata(post.authorId);
+          return {
+            ...post,
+            Author: authorDetails.FirstName + " " + authorDetails.LastName,
+            AuthorEmail: authorDetails.email,
+          };
+        })
+      );
+
+      res.status(200).send(postsWithMetadata);
+    }
+  } catch (error) {
+    console.log("Error retrieving pending posts:", error);
+    res.status(500).send("Internal Server Error");
+  }
+});
+
 // Upload post with media
 router.post("/:authorId", upload.single("media"), async (req, res) => {
   const authorId = req.params.authorId;
@@ -253,6 +355,34 @@ router.delete("/:userId/:id/unlike", async (req, res) => {
   }
 });
 
+//report posts
+router.patch("/:userId/:postId/report", async (req, res) => {
+  try {
+    const { userId, postId } = req.params;
+
+    const query = { _id: new ObjectId(postId) };
+
+    const post = await db.collection("posts").findOne(query);
+    //checks if user already reported
+    if (post.reports && post.reports.includes(userId)) {
+      return res
+        .status(400)
+        .send({ message: "You have already reported this post." });
+    }
+    const update = {
+      $push: { reports: userId },
+    };
+
+    const result = await db.collection("posts").updateOne(query, update);
+
+    res.status(200).send(result);
+    reportChecker(postId);
+  } catch (error) {
+    console.log("Error reporting post:", error);
+    res.status(500).send("Internal Server Error");
+  }
+});
+
 //get your activity
 router.get("/yourActivity/:userId", async (req, res) => {
   try {
@@ -327,39 +457,6 @@ router.get("/activityFeed/:userId", async (req, res) => {
   } catch (error) {
     console.log("Error retrieving activity feed", error);
     res.status(500).send("Internal Server Error");
-  }
-});
-
-// Route: Approve the post by admin
-router.patch("/:postId/approve", async (req, res) => {
-  let collection = await db.collection("posts");
-
-  const query = { _id: new ObjectId(req.params.postId) };
-  const update = { $set: { status: "Approved" } };
-  let result = await collection.updateOne(query, update);
-
-  res.send(result).status(200);
-});
-
-// Route: deny the posts by admin
-router.patch("/:postId/deny", async (req, res) => {
-  let collection = await db.collection("posts");
-
-  const query = { _id: new ObjectId(req.params.postId) };
-  const update = { $set: { status: "Denied" } };
-  let result = await collection.updateOne(query, update);
-
-  res.send(result).status(200);
-});
-
-// Route: To get pending posts
-router.get("/pending", async (req, res) => {
-  let collection = await db.collection("posts");
-  let results = await collection.find({ status: "Pending" }).toArray();
-  if (results.length === 0) {
-    res.status(404).send({ message: "No pending members found." });
-  } else {
-    res.status(200).send(results);
   }
 });
 
