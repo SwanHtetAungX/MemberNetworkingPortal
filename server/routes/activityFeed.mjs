@@ -1,5 +1,6 @@
 import express from "express";
 import { GridFSBucket, ObjectId } from "mongodb";
+import nodemailer from "nodemailer";
 import multer from "multer";
 import db from "../db/conn.mjs"; // Import your database connection
 
@@ -11,6 +12,31 @@ const upload = multer({ storage: storage });
 
 const formatDate = (date) => {
   return date.toISOString().split("T")[0];
+};
+
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: "membernetworkingportal@gmail.com",
+    pass: "fklb cbjd ebxd wbfz",
+  },
+});
+
+const sendEmail = (to, subject, text) => {
+  const mailOptions = {
+    from: "membernetworkingportal@gmail.com",
+    to,
+    subject,
+    text,
+  };
+
+  transporter.sendMail(mailOptions, (error, info) => {
+    if (error) {
+      console.log("Error sending email:", error);
+    } else {
+      console.log("Email sent:", info.response);
+    }
+  });
 };
 
 const following = async (userId) => {
@@ -57,15 +83,16 @@ const authorMetadata = async (authorId) => {
   let collection = db.collection("members");
   let query = { _id: new ObjectId(authorId) };
   let result = await collection.findOne(query, {
-    projection: { FirstName: 1, LastName: 1, ProfilePic: 1 },
+    projection: { FirstName: 1, LastName: 1, Email: 1, ProfilePic: 1 },
   });
 
   return result;
 };
 
-const reportChecker = async (postId) => {
+const reportChecker = async (postId, authorId, authorEmail) => {
   try {
     let collection = db.collection("posts");
+    let notificationCollection = db.collection("notifications");
     let query = { _id: new ObjectId(postId) };
     let result = await collection.findOne(query, {
       projection: { reports: 1 },
@@ -74,6 +101,23 @@ const reportChecker = async (postId) => {
     const reports = result.reports;
     if (reports.length === 10) {
       await collection.deleteOne(query);
+      let notification = {
+        userID: authorId,
+        type: "Post",
+        message: `Your post has been removed by the system.`,
+        createdAt: new Date(),
+      };
+      await notificationCollection.insertOne(notification);
+
+      // Send email notification
+
+      const recipientEmail = authorEmail;
+
+      sendEmail(
+        recipientEmail,
+        "Post Status",
+        `Your Post has been removed due to excessive reports by users.`
+      );
     }
   } catch (error) {
     console.log("Error retrieving activity feed", error);
@@ -84,10 +128,27 @@ const reportChecker = async (postId) => {
 router.patch("/:postId/approve", async (req, res) => {
   try {
     let collection = await db.collection("posts");
+    let notificationCollection = await db.collection("notifications");
 
     const query = { _id: new ObjectId(req.params.postId) };
-    const update = { $set: { status: "Approved" } };
+    const update = { $set: { status: "Approved" }, $unset: { reports: "" } };
     let result = await collection.updateOne(query, update);
+
+    // Create notification for the recipient
+    let notification = {
+      userID: req.body.authorId,
+      type: "Post",
+      message: `Your post has been approved!`,
+      createdAt: new Date(),
+    };
+    await notificationCollection.insertOne(notification);
+
+    // Send email notification
+
+    const recipientEmail = req.body.authorEmail;
+    console.log(recipientEmail);
+
+    sendEmail(recipientEmail, "Post Status", `Your Post has been approved!`);
 
     res.send(result).status(200);
   } catch (error) {
@@ -98,13 +159,39 @@ router.patch("/:postId/approve", async (req, res) => {
 
 // Route: deny the posts by admin
 router.delete("/:postId/deny", async (req, res) => {
-  let collection = await db.collection("posts");
+  try {
+    let collection = await db.collection("posts");
+    let notificationCollection = await db.collection("notifications");
 
-  const query = { _id: new ObjectId(req.params.postId) };
+    const query = { _id: new ObjectId(req.params.postId) };
 
-  let result = await collection.deleteOne(query);
+    let result = await collection.deleteOne(query);
 
-  res.send(result).status(200);
+    // Create notification for the recipient
+    let notification = {
+      userID: req.headers["x-authorid"],
+      type: "Post",
+      message: `Your post has been denied!`,
+      createdAt: new Date(),
+    };
+    await notificationCollection.insertOne(notification);
+
+    // Send email notification
+
+    const recipientEmail = req.headers["x-authoremail"];
+    console.log(recipientEmail);
+
+    sendEmail(
+      recipientEmail,
+      "Post Status",
+      `Your Post has been denied! Reason: ${req.headers["x-reason"]}`
+    );
+
+    res.send(result).status(200);
+  } catch (error) {
+    console.log("Error retrieving activity feed", error);
+    res.status(500).send("Internal Server Error");
+  }
 });
 
 // Route: To get pending posts
@@ -121,12 +208,12 @@ router.get("/pending", async (req, res) => {
           const authorDetails = await authorMetadata(post.authorId);
           return {
             ...post,
-            Author: authorDetails.FirstName + " " + authorDetails.LastName,
-            AuthorEmail: authorDetails.email,
+            author: authorDetails.FirstName + " " + authorDetails.LastName,
+            authorEmail: authorDetails.Email,
           };
         })
       );
-
+      console.log(postsWithMetadata);
       res.status(200).send(postsWithMetadata);
     }
   } catch (error) {
@@ -151,8 +238,8 @@ router.get("/reported", async (req, res) => {
           const authorDetails = await authorMetadata(post.authorId);
           return {
             ...post,
-            Author: authorDetails.FirstName + " " + authorDetails.LastName,
-            AuthorEmail: authorDetails.email,
+            author: authorDetails.FirstName + " " + authorDetails.LastName,
+            authorEmail: authorDetails.Email,
           };
         })
       );
@@ -359,6 +446,7 @@ router.delete("/:userId/:id/unlike", async (req, res) => {
 router.patch("/:userId/:postId/report", async (req, res) => {
   try {
     const { userId, postId } = req.params;
+    const { authorId, authorEmail } = req.body;
 
     const query = { _id: new ObjectId(postId) };
 
@@ -376,7 +464,7 @@ router.patch("/:userId/:postId/report", async (req, res) => {
     const result = await db.collection("posts").updateOne(query, update);
 
     res.status(200).send(result);
-    reportChecker(postId);
+    reportChecker(postId, authorId, authorEmail);
   } catch (error) {
     console.log("Error reporting post:", error);
     res.status(500).send("Internal Server Error");

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Card, Avatar, Form, Input, Button, Upload, message } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 
-const NewPostCard = ({ profileData }) => {
+const NewPostCard = ({ profileData, token }) => {
   const [form] = Form.useForm();
   const [file, setFile] = useState(null);
   const [content, setContent] = useState("");
@@ -14,6 +14,17 @@ const NewPostCard = ({ profileData }) => {
 
   const handlePost = async () => {
     try {
+      const auth = await fetch(`http://localhost:5050/members/authenticate`, {
+        method: "GET",
+        headers: {
+          Authorization: token,
+        },
+      });
+
+      if (auth === false) {
+        message.error("Unauthorized access. Please log in again");
+        return;
+      }
       const values = await form.validateFields();
       console.log("Content:", values.content);
       console.log("File:", file);

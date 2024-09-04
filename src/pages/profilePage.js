@@ -39,6 +39,7 @@ const ProfilePage = () => {
 
   const [fileList, setFileList] = useState([]);
   const [uploading, setUploading] = useState(false);
+  const token = localStorage.getItem("authToken");
 
   useEffect(() => {
     const sessionId = sessionStorage.getItem("id");
@@ -254,7 +255,7 @@ const ProfilePage = () => {
             </Paragraph>
           </Card>
         ))}
-        <YourActivity id={id} profileData={profileData} />
+        <YourActivity id={id} profileData={profileData} token={token} />
       </Content>
 
       <RemoveModal
@@ -263,6 +264,7 @@ const ProfilePage = () => {
         profileData={profileData}
         removeModalOpen={removeModalOpen}
         setRemoveModalOpen={setRemoveModalOpen}
+        token={token}
       />
 
       <UploadModal
@@ -273,6 +275,7 @@ const ProfilePage = () => {
         setUploading={setUploading}
         uploading={uploading}
         setFileList={setFileList}
+        token={token}
       />
 
       <AddModal
@@ -281,11 +284,13 @@ const ProfilePage = () => {
         addModalOpen={addModalOpen}
         setAddModalOpen={setAddModalOpen}
         profileData={profileData}
+        token={token}
       />
       <ProfilePicModal
         id={id}
         setProfilePicModalOpen={setProfilePicModalOpen}
         profilePicModalOpen={profilePicModalOpen}
+        token={token}
       />
     </Layout>
   );

@@ -9,6 +9,7 @@ const CommentModal = ({
   id,
   postId,
   username,
+  token,
 }) => {
   const [form] = useForm();
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
@@ -16,6 +17,17 @@ const CommentModal = ({
 
   const handleComment = async () => {
     try {
+      const auth = await fetch(`http://localhost:5050/members/authenticate`, {
+        method: "GET",
+        headers: {
+          Authorization: token,
+        },
+      });
+
+      if (auth === false) {
+        message.error("Unauthorized access. Please log in again");
+        return;
+      }
       const values = await form.validateFields();
       const payload = {
         content: values.Content,
@@ -48,6 +60,17 @@ const CommentModal = ({
 
   const handleDelete = async () => {
     try {
+      const auth = await fetch(`http://localhost:5050/members/authenticate`, {
+        method: "GET",
+        headers: {
+          Authorization: token,
+        },
+      });
+
+      if (auth === false) {
+        message.error("Unauthorized access. Please log in again");
+        return;
+      }
       const response = await fetch(
         `http://localhost:5050/posts/${id}/${postId}/${selectedComment.commentId}/comment`,
         {

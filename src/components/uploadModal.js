@@ -12,9 +12,21 @@ const UploadModal = ({
   setUploading,
   uploading,
   setFileList,
+  token,
 }) => {
   //Uploading of csv
-  const handleUpload = () => {
+  const handleUpload = async () => {
+    const auth = await fetch(`http://localhost:5050/members/authenticate`, {
+      method: "GET",
+      headers: {
+        Authorization: token,
+      },
+    });
+
+    if (auth === false) {
+      message.error("Unauthorized access. Please log in again");
+      return;
+    }
     const formData = new FormData();
     fileList.forEach((file) => {
       formData.append("files[]", file);
@@ -25,9 +37,6 @@ const UploadModal = ({
     fetch(`http://localhost:5050/members/${id}/upload`, {
       method: "PATCH",
       body: formData,
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
     })
       .then((res) => res.json())
       .then(() => {

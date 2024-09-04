@@ -6,6 +6,7 @@ const PendingPostsTable = () => {
   const [pendingPosts, setPendingPosts] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
   const [searchText, setSearchText] = useState("");
+  const [reason, setReason] = useState("");
 
   useEffect(() => {
     const fetchPendingPosts = async () => {
@@ -53,17 +54,18 @@ const PendingPostsTable = () => {
 
   useEffect(() => {
     const filtered = pendingPosts.filter((post) => {
-      return post.Author.toLowerCase().includes(searchText.toLowerCase());
+      return post.author.toLowerCase().includes(searchText.toLowerCase());
     });
     setFilteredData(filtered);
   }, [searchText, pendingPosts]);
 
-  const handleApprove = async (id) => {
+  const handleApprove = async (id, authorId, authorEmail) => {
     try {
       const response = await fetch(
         `http://localhost:5050/posts/${id}/approve`,
         {
           method: "PATCH",
+          body: JSON.stringify({ authorId, authorEmail }),
         }
       );
       if (!response.ok) {
@@ -76,10 +78,16 @@ const PendingPostsTable = () => {
     }
   };
 
-  const handleReject = async (id) => {
+  const handleReject = async (id, authorId, authorEmail, reason) => {
     try {
       const response = await fetch(`http://localhost:5050/posts/${id}/deny`, {
         method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          "X-AuthorId": authorId,
+          "X-AuthorEmail": authorEmail,
+          "X-Reason": reason,
+        },
       });
       if (!response.ok) {
         throw new Error("Failed to reject post");
@@ -100,8 +108,8 @@ const PendingPostsTable = () => {
     },
     {
       title: "Author",
-      dataIndex: "Author",
-      key: "Author",
+      dataIndex: "author",
+      key: "author",
       width: 40,
     },
 
@@ -164,7 +172,14 @@ const PendingPostsTable = () => {
         <div style={{ display: "flex", justifyContent: "space-evenly" }}>
           <Popconfirm
             title="Are you sure you want to approve this post?"
-            onConfirm={() => handleApprove(record._id)}
+            onConfirm={() =>
+              handleApprove(
+                record._id,
+                record.authorId,
+                record.authorEmail,
+                reason
+              )
+            }
             okText="Yes"
             cancelText="No"
           >
@@ -173,8 +188,25 @@ const PendingPostsTable = () => {
             </Button>
           </Popconfirm>
           <Popconfirm
-            title="Are you sure you want to reject this post?"
-            onConfirm={() => handleReject(record._id)}
+            title={
+              <>
+                <div>Are you sure you want to reject this post?</div>
+                <Input
+                  placeholder="Reason for rejection"
+                  value={reason}
+                  onChange={(e) => setReason(e.target.value)}
+                  style={{ marginTop: 10 }}
+                />
+              </>
+            }
+            onConfirm={() =>
+              handleReject(
+                record._id,
+                record.authorId,
+                record.authorEmail,
+                reason
+              )
+            }
             okText="Yes"
             cancelText="No"
           >

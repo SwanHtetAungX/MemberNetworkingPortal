@@ -6,6 +6,7 @@ const AddModal = ({
   addModalOpen,
   setAddModalOpen,
   profileData,
+  token,
 }) => {
   const [form] = useForm();
 
@@ -13,6 +14,17 @@ const AddModal = ({
 
   const handleAdd = async () => {
     try {
+      const auth = await fetch(`http://localhost:5050/members/authenticate`, {
+        method: "GET",
+        headers: {
+          Authorization: token,
+        },
+      });
+
+      if (auth === false) {
+        message.error("Unauthorized access. Please log in again");
+        return;
+      }
       const values = await form.validateFields();
       const payload = {
         field: modalContext,

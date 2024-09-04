@@ -7,6 +7,7 @@ const ConnectBtn = () => {
   const userID1 = sessionStorage.getItem("id"); // userID1 from session storage
   const [connectionStatus, setConnectionStatus] = useState(null);
   const [confirmationModal, setconfirmationModal] = useState(false);
+  const token = localStorage.getItem("authToken");
 
   const checkConnectionStatus = useCallback(async () => {
     try {
@@ -32,8 +33,19 @@ const ConnectBtn = () => {
 
   const handleRequestConnect = async () => {
     try {
+      const auth = await fetch(`http://localhost:5050/members/authenticate`, {
+        method: "GET",
+        headers: {
+          Authorization: token,
+        },
+      });
+
+      if (auth === false) {
+        message.error("Unauthorized access. Please log in again");
+        return;
+      }
       const payload = {
-        userID1
+        userID1,
       };
 
       const response = await fetch(
@@ -48,7 +60,7 @@ const ConnectBtn = () => {
       );
 
       if (response.ok) {
-        message.success("Connection request sent successfully.");
+        message.success("Connection request removed successfully.");
         setConnectionStatus("Pending"); // ppdate status to Pending after request
       } else {
         throw new Error("Failed to send connection request.");
@@ -62,6 +74,17 @@ const ConnectBtn = () => {
 
   const handleDeleteConnection = async () => {
     try {
+      const auth = await fetch(`http://localhost:5050/members/authenticate`, {
+        method: "GET",
+        headers: {
+          Authorization: token,
+        },
+      });
+
+      if (auth === false) {
+        message.error("Unauthorized access. Please log in again");
+        return;
+      }
       const payload = {
         userID1,
       };

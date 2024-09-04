@@ -26,8 +26,28 @@ const ActivityFeedPage = () => {
   const [commentModalOpen, setCommentModalOpen] = useState(false);
   const [selectedComments, setSelectedComments] = useState([]);
   const [selectedPostId, setSelectedPostId] = useState("");
+  const [selectedAuthorId, setSelectedAuthorId] = useState("");
+  const [selectedAuthorEmail, setSelectedAuthorEmail] = useState("");
+  const [confirmVisible, setConfirmVisible] = useState(false);
+  const token = localStorage.getItem("authToken");
 
   useEffect(() => {
+    const auth = async () => {
+      const authResponse = await fetch(
+        `http://localhost:5050/members/authenticate`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: token,
+          },
+        }
+      );
+
+      if (authResponse.status === 401) {
+        setConfirmVisible(true);
+        return;
+      }
+    };
     const fetchProfileData = async () => {
       try {
         const response = await fetch(`http://localhost:5050/members/${id}`);
@@ -50,7 +70,6 @@ const ActivityFeedPage = () => {
           throw new Error(`Error: ${response.statusText}`);
         }
         const postsData = await response.json();
-        console.log(postsData);
 
         const postsWithMedia = await Promise.all(
           postsData.map(async (post) => {
@@ -86,10 +105,10 @@ const ActivityFeedPage = () => {
         setLoading(false);
       }
     };
-
+    auth();
     fetchProfileData();
     fetchPostsData();
-  }, [id]);
+  }, [id, token]);
 
   if (loading) {
     return <div>Loading...</div>;
@@ -122,12 +141,13 @@ const ActivityFeedPage = () => {
     }
   };
 
-  const handleReport = async (postId) => {
+  const handleReport = async (postId, authorId, authorEmail) => {
     try {
       const response = await fetch(
         `http://localhost:5050/posts/${id}/${postId}/report`,
         {
           method: "PATCH",
+          body: JSON.stringify({ authorId, authorEmail }),
         }
       );
 
@@ -165,7 +185,9 @@ const ActivityFeedPage = () => {
       label: (
         <Popconfirm
           title="Are you sure you want to report this post?"
-          onConfirm={() => handleReport(selectedPostId)}
+          onConfirm={() =>
+            handleReport(selectedPostId, selectedAuthorId, selectedAuthorEmail)
+          }
           okText="Yes"
           cancelText="No"
         >
@@ -186,7 +208,7 @@ const ActivityFeedPage = () => {
       <Title level={2}>Activity Feed</Title>
       <Row gutter={[16, 16]}>
         <Col span={24}>
-          <NewPostCard profileData={profileData} />
+          <NewPostCard profileData={profileData} token={token} />
         </Col>
         {profileData &&
           activityFeed.map((post) => (
@@ -214,6 +236,8 @@ const ActivityFeedPage = () => {
                       icon={<EllipsisOutlined />}
                       onClick={() => {
                         setSelectedPostId(post._id);
+                        setSelectedAuthorId(post.authorId);
+                        setSelectedAuthorEmail(post.authorEmail);
                       }}
                     />
                   </Dropdown>,
@@ -247,6 +271,7 @@ const ActivityFeedPage = () => {
                   likeStatus={post.likeStatus}
                   userId={id}
                   postId={post._id}
+                  token={token}
                 />
                 <Button
                   type="text"
@@ -262,12 +287,27 @@ const ActivityFeedPage = () => {
             </Col>
           ))}
       </Row>
+      <Popconfirm
+        title="Your session has expired. Please relogin"
+        open={confirmVisible}
+        onConfirm={() => {
+          setConfirmVisible(false);
+          window.location.href = "http://localhost:3000/";
+        }}
+        onCancel={() => {
+          setConfirmVisible(false);
+          window.location.href = "http://localhost:3000/";
+        }}
+        okText="Yes"
+        cancelText={null}
+      />
 
       <CommentModal
         commentModalOpen={commentModalOpen}
         setCommentModalOpen={setCommentModalOpen}
         comments={selectedComments}
         id={id}
+        token={token}
         postId={selectedPostId}
         username={`${profileData.FirstName || ""} ${
           profileData.LastName || ""

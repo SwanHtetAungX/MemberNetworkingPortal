@@ -15,7 +15,7 @@ import CommentModal from "./commentsModal";
 
 const { Title, Paragraph } = Typography;
 
-const YourActivity = ({ id, profileData }) => {
+const YourActivity = ({ id, profileData, token }) => {
   const [activityFeed, setActivityFeed] = useState([]);
   const [loading, setLoading] = useState(true);
   const [commentModalOpen, setCommentModalOpen] = useState(false);
@@ -80,6 +80,17 @@ const YourActivity = ({ id, profileData }) => {
 
   const handleDeletePost = async (postId) => {
     try {
+      const auth = await fetch(`http://localhost:5050/members/authenticate`, {
+        method: "GET",
+        headers: {
+          Authorization: token,
+        },
+      });
+
+      if (auth === false) {
+        message.error("Unauthorized access. Please log in again");
+        return;
+      }
       const response = await fetch(
         `http://localhost:5050/posts/${id}/${postId}`,
         {
@@ -189,6 +200,7 @@ const YourActivity = ({ id, profileData }) => {
                 likeStatus={post.likeStatus}
                 userId={id}
                 postId={post._id}
+                token={token}
               />
               <Button
                 type="text"
@@ -212,6 +224,7 @@ const YourActivity = ({ id, profileData }) => {
         id={id}
         postId={selectedPostId}
         username={`${profileData.FirstName} ${profileData.LastName}`}
+        token={token}
       />
     </div>
   );

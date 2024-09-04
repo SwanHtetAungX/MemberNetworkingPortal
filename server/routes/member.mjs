@@ -189,6 +189,16 @@ router.post("/verify-2fa", async (req, res) => {
   }
 });
 
+router.get("/authenticate", async (req, res) => {
+  try {
+    const token = req.headers["authorization"];
+    jwt.verify(token, JWT_SECRET);
+    res.status(200).send(true);
+  } catch (error) {
+    res.status(401).send(false);
+  }
+});
+
 // Storage for multer
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
