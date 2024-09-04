@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { List, Card, Avatar, Spin, Alert, Typography } from 'antd';
 import { NotificationOutlined } from '@ant-design/icons';
-
+import EventCalendar from '../components/eventCalendar';
 const { Title } = Typography;
 
 const NotificationPage = () => {
@@ -74,6 +74,16 @@ const NotificationPage = () => {
           )}
         />
       </Card>
+
+      <div className="mt-5">
+        <Title level={3}>Event Planning</Title>
+        <div className="row">
+          <div className="col-md-8">
+            <EventCalendar />
+          </div>
+        </div>
+      </div>
+
     </div>
   );
 };
