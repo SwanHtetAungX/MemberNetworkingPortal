@@ -100,6 +100,31 @@ router.get("/", authenticateUser, async(req,res)=>{
     }
 });
 
+//to GET an array of Dates to highlight events in calendar
+
+router.get("/dates", authenticateUser, async(req,res)=>{
+    try{
+        //variables
+        const userId = req.userId;
+        let collection = await db.collection("events");
+
+        const events = await collection.find({
+            createdBy: new ObjectId(userId)}).toArray();
+
+        // Extract unique dates
+        const eventDates = new Set(events.map(event => {
+            return new Date(event.date).toISOString().split('T')[0]; // Format date as 'YYYY-MM-DD'
+        }));
+
+        // Send unique dates as response
+        res.status(200).json({ dates: Array.from(eventDates) });
+    } catch (error) {
+        console.error("Failed to retreive Event Dates.");
+        res.status(500).send("Internal Server Error");
+    }
+});
+
+
 //Editing an Event by user (PATCH)
 router.patch("/update/:id", authenticateUser, async (req, res) => {
     try {
