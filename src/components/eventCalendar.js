@@ -5,7 +5,7 @@ import '../css/eventCalendar.css';
 const EventCalendar = ({ onDateSelect }) => {
   const [eventDates, setEventDates] = useState(new Set());
 
-  // Function to fetch event dates
+  // Fetch event dates from the backend
   const fetchEventDates = async () => {
     try {
       const token = localStorage.getItem('authToken');
@@ -21,7 +21,10 @@ const EventCalendar = ({ onDateSelect }) => {
       if (!response.ok) throw new Error('Network response was not ok');
 
       const result = await response.json();
-      setEventDates(new Set(result.dates)); // Assuming result.dates is an array of date strings
+      
+      // Format dates to 'YYYY-MM-DD'
+      const formattedDates = result.dates.map(date => new Date(date).toISOString().split('T')[0]);
+      setEventDates(new Set(formattedDates));
     } catch (error) {
       console.error('Error fetching event dates:', error.message);
     }
@@ -31,14 +34,23 @@ const EventCalendar = ({ onDateSelect }) => {
     fetchEventDates();
   }, []);
 
-  const handleDateClick = (date) => {
-    const formattedDate = date.format('YYYY-MM-DD');
-    onDateSelect(formattedDate);  // Notify parent (NotificationPage)
+  // Convert date object to 'YYYY-MM-DD'
+  const formatDate = (date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
   };
 
-  //to highlight dates that have events
+  // Handle date click and pass the selected date to the parent
+  const handleDateClick = (date) => {
+    const formattedDate = formatDate(date.toDate());
+    onDateSelect(formattedDate);
+  };
+
+  // Render highlight for dates with events
   const dateCellRender = (value) => {
-    const formattedDate = value.format('YYYY-MM-DD');
+    const formattedDate = formatDate(value.toDate());
     if (eventDates.has(formattedDate)) {
       return <div className='highlight-date' />;
     }

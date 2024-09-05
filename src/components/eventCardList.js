@@ -1,22 +1,52 @@
 import React from 'react';
-import { Card, Button } from 'antd';
-import { PlusOutlined } from '@ant-design/icons';
+import { List, Button, Card } from 'antd';
+import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
 
-const EventCardList = ({ selectedDate, events, setIsModalVisible }) => {
+const EventCardList = ({ selectedDate, events, onEditEvent, onDeleteEvent, onCreateEvent }) => {
   return (
     <Card
-      title={`Events for ${selectedDate}`}
-      extra={<Button icon={<PlusOutlined />} onClick={() => setIsModalVisible(true)}>Add Event</Button>}
+      title={`Events on ${selectedDate || 'Select a Date'}`}
+      extra={
+        <Button
+          type="primary"
+          icon={<PlusOutlined />}
+          onClick={onCreateEvent}>
+          Add Event
+        </Button>
+      }
+      style={{ width: '100%' }}
     >
-      <ul>
-        {events.length > 0 ? (
-          events.map((event, index) => (
-            <li key={index}>{event.title}</li>
-          ))
-        ) : (
-          <li>No events for this day</li>
+      <List
+        itemLayout="horizontal"
+        dataSource={events}
+        renderItem={event => (
+          <List.Item
+            actions={[
+              /* Edit Button with Edit icon */
+              <Button
+                key="edit"
+                type="link"
+                icon={<EditOutlined />}
+                onClick={() => onEditEvent(event)}>
+              </Button>,
+
+              /* Delete Button with Delete icon */
+              <Button
+                key="delete"
+                type="link"
+                danger
+                icon={<DeleteOutlined />}
+                onClick={() => onDeleteEvent(event._id)}>
+              </Button>
+            ]}
+          >
+            <List.Item.Meta
+              title={event.title}
+              description={`${event.date} - ${event.location}`}
+            />
+          </List.Item>
         )}
-      </ul>
+      />
     </Card>
   );
 };
