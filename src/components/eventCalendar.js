@@ -2,37 +2,32 @@ import React, { useState, useEffect } from 'react';
 import { Calendar } from 'antd';
 import '../css/eventCalendar.css';
 
-const EventCalendar = ({ onDateSelect }) => {
+const EventCalendar = ({ onDateSelect, refreshEventDates }) => {
   const [eventDates, setEventDates] = useState(new Set());
 
   // Fetch event dates from the backend
-  const fetchEventDates = async () => {
-    try {
-      const token = localStorage.getItem('authToken');
-      if (!token) throw new Error('No authentication token found');
-
-      const response = await fetch('http://localhost:5050/event/dates', {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-
-      if (!response.ok) throw new Error('Network response was not ok');
-
-      const result = await response.json();
-      
-      // Format dates to 'YYYY-MM-DD'
-      const formattedDates = result.dates.map(date => new Date(date).toISOString().split('T')[0]);
-      setEventDates(new Set(formattedDates));
-    } catch (error) {
-      console.error('Error fetching event dates:', error.message);
-    }
-  };
-
   useEffect(() => {
+    const fetchEventDates = async () => {
+      try {
+        const token = localStorage.getItem('authToken');
+        const response = await fetch('http://localhost:5050/event/dates', {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+
+        if (!response.ok) throw new Error('Network response was not ok');
+
+        const result = await response.json();
+        setEventDates(new Set(result.dates)); // Update the eventDates state
+      } catch (error) {
+        console.error('Error fetching event dates:', error.message);
+      }
+    };
+
     fetchEventDates();
-  }, []);
+  }, [refreshEventDates]);
 
   // Convert date object to 'YYYY-MM-DD'
   const formatDate = (date) => {

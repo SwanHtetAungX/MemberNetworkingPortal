@@ -8,10 +8,29 @@ const { Title } = Typography;
 const EventPage = () => {
     const [selectedDate, setSelectedDate] = useState(null);
     const [events, setEvents] = useState([]);
+    const [eventDates, setEventDates] = useState(new Set());
     const [isCreateModalVisible, setCreateModalVisible] = useState(false);
     const [isEditModalVisible, setEditModalVisible] = useState(false);
     const [currentEvent, setCurrentEvent] = useState(null);
     const [form] = Form.useForm(); // Form instance for Create and Edit
+
+    
+      // Function to refresh event dates and update the calendar
+    const refreshEventDates = async () => {
+        try {
+            const token = localStorage.getItem('authToken');
+            const response = await fetch('http://localhost:5050/event/dates', {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                },
+            });
+            const result = await response.json();
+            setEventDates(new Set(result.dates));
+        } catch (error) {
+            console.error('Error fetching event dates:', error.message);
+        }
+    };
 
     // Fetch events based on selected date
     const fetchEvents = async (date) => {
@@ -52,6 +71,7 @@ const EventPage = () => {
             setCreateModalVisible(false);
             form.resetFields(); // Reset form after submission
             fetchEvents(selectedDate);  // Refresh events list
+            await refreshEventDates();// call function to update calendar
         } catch (error) {
             console.error("Error creating event:", error);
         }
@@ -71,6 +91,7 @@ const EventPage = () => {
             });
             setEditModalVisible(false);
             fetchEvents(selectedDate);  // Refresh events list
+            await refreshEventDates();// call function to update calendar
         } catch (error) {
             console.error("Error editing event:", error);
         }
@@ -87,6 +108,7 @@ const EventPage = () => {
                 },
             });
             fetchEvents(selectedDate);  // Refresh events list
+            await refreshEventDates();// call function to update calendar
         } catch (error) {
             console.error("Error deleting event:", error);
         }
@@ -110,7 +132,8 @@ const EventPage = () => {
             <Title level={3}>Event Planning</Title>
             <div className="row">
                 <div className="col-md-7">
-                    <EventCalendar onDateSelect={setSelectedDate} />
+                    <EventCalendar onDateSelect={setSelectedDate} 
+                    refreshEventDates={refreshEventDates}/>
                 </div>
 
                 {selectedDate && (
