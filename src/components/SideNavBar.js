@@ -1,6 +1,6 @@
 import React from 'react';
 import { Layout, Menu } from 'antd';
-import { UserAddOutlined, UserOutlined, ProfileOutlined, LogoutOutlined } from '@ant-design/icons';
+import { UserAddOutlined, UserOutlined, ProfileOutlined, LogoutOutlined, NotificationOutlined, CalendarOutlined, MailOutlined } from '@ant-design/icons';
 import { Link } from 'react-router-dom';
 
 const { Sider } = Layout;
@@ -52,6 +52,24 @@ const SideNavigationBar = () => {
             Profile
           </Link>
         </Menu.Item>
+        <Menu.SubMenu
+          key="notifications"
+          title="Notifications"
+          icon={<NotificationOutlined />}
+        >
+          <Menu.Item key="events">
+            <Link to="/approve-events">
+              <CalendarOutlined />
+              Events
+            </Link>
+          </Menu.Item>
+          <Menu.Item key="announcements">
+            <Link to="/add-announcements">
+              <MailOutlined />
+              Announcements
+            </Link>
+          </Menu.Item>
+        </Menu.SubMenu>
         <Menu.Item key="logout" icon={<LogoutOutlined />} onClick={handleLogout}>
           Logout
         </Menu.Item>

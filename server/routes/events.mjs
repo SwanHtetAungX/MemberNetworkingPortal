@@ -26,7 +26,7 @@ const authenticateUser = (req, res, next) => {
 //Uploading Image or Promo Video for event
 router.post("/create", authenticateUser, async (req, res) => {
     try {
-        const { title, date, location, description, isPublic } = req.body;
+        const { title, date, location, time, description, isPublic } = req.body;
 
         if (!title || !date || !location) {
             return res.status(400).send("Title, date, and location are required");
@@ -38,6 +38,7 @@ router.post("/create", authenticateUser, async (req, res) => {
             title,
             date: new Date(date),
             location,
+            time,
             description,
             isPublic: isPublic || false,
             //attendeeNumber,
@@ -129,7 +130,7 @@ router.get("/dates", authenticateUser, async(req,res)=>{
 router.patch("/update/:id", authenticateUser, async (req, res) => {
     try {
         const { id } = req.params;
-        const { title, date, location, description, isPublic } = req.body;
+        const { title, date, location, time, description, isPublic } = req.body;
         const userId = req.userId;
 
         let collection = await db.collection("events");
@@ -139,6 +140,7 @@ router.patch("/update/:id", authenticateUser, async (req, res) => {
         if (title) updateData.title = title;
         if (date) updateData.date = new Date(date);
         if (location) updateData.location = location;
+        if (time) updateData.time = time;
         if (description) updateData.description = description;
         if (typeof isPublic !== 'undefined') updateData.isPublic = isPublic;
 
@@ -206,7 +208,7 @@ router.patch("/admin/approve-or-cancel/:id", authenticateUser, async (req, res) 
     try {
         // Ensure the user is an admin (add admin check logic here if needed)
         const { id } = req.params;
-        const { action, note } = req.body; // 'action' can be 'approve' or 'cancel'
+        const { action } = req.body; // 'action' = 'approve' or 'cancel'
 
         if (!['approve', 'cancel'].includes(action)) {
             return res.status(400).send("Invalid action");
