@@ -20,6 +20,7 @@ import SignUp from './components/sign-up';
 import Login from './components/login-form';
 import TwoFactorAuth from './components/twoFA';
 import AdminLogin from './components/admin-login';
+import AdminEventsPage from './pages/AdminEventsPage';
 
 const { Content } = Layout;
 
@@ -35,6 +36,7 @@ const AppLayout = () => {
               <Route path="/view-member" element={<MembersPage />} />
               <Route path="/add-member" element={<AddMemberPage />} />
               <Route path='/admin-profile' element={<AdminProfile/>} />
+              <Route path='/approve-events' element={<AdminEventsPage />} />
               <Route path='/notification' element={<NotificationPage/>} />
               <Route path='/connection' element={<ConnectionPage/>} />
               <Route path="/" element={<Landing />} />
@@ -44,7 +46,7 @@ const AppLayout = () => {
               <Route path="/signup" element={<SignUp />} />
               <Route path="/profilePage/:id" element={<ProfilePage />} />
             </Routes>
-               
+               {/* /approve-events */}
           </Content>
           <Footer />
         </Layout>
@@ -58,7 +60,7 @@ const ConditionalSidebar = () => {
   const location = useLocation(); 
 
   // Conditionally render the sidebar based on the path
-  if (location.pathname === '/admin-profile' || location.pathname=== '/view-member' || location.pathname==="/add-member") {
+  if (location.pathname === '/admin-profile' || location.pathname=== '/view-member' || location.pathname==="/add-member" || location.pathname === '/approve-events') {
     return <SideNavigationBar />;
   }
   return null;
@@ -67,7 +69,7 @@ const ConditionalSidebar = () => {
 const ConditionaNavBar = () => {
   const location = useLocation();
 
-  if (location.pathname === '/login' || location.pathname === '/signup' || location.pathname === '/admin-login' || location.pathname === '/admin-profile' || location.pathname === '/view-member' || location.pathname === '/add-member' || location.pathname === '/'){
+  if (location.pathname === '/login' || location.pathname === '/signup' || location.pathname === '/admin-login' || location.pathname === '/admin-profile' || location.pathname === '/view-member' || location.pathname === '/add-member' || location.pathname === '/' || location.pathname === '/approve-events'){
     return null;
   }
   return <Navbar />;

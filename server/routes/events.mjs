@@ -52,10 +52,10 @@ router.post("/create", authenticateUser, async (req, res) => {
 
         let result = await collection.insertOne(newEvent);
 
-        const message = isPublic 
-            ? "Event created and pending approval" 
+        const message = isPublic
+            ? "Event created and pending approval"
             : "Event added to calendar";
-        
+
         res.status(201).send({ message, eventId: result.insertedId });
         console.log("New event:", newEvent);
         console.log("Response message:", message);
@@ -69,12 +69,12 @@ router.post("/create", authenticateUser, async (req, res) => {
 
 
 //Get Events by User Id and Date To display on Calendar? Search?(GET)\
-router.get("/", authenticateUser, async(req,res)=>{
-    try{
+router.get("/", authenticateUser, async (req, res) => {
+    try {
         //variables
         const { date } = req.query;
         const userId = req.userId;
-        
+
         if (!date) {
             return res.status(400).send("Date is required");
         }
@@ -93,7 +93,7 @@ router.get("/", authenticateUser, async(req,res)=>{
                 $lt: endOfDay
             }
         }).toArray();
-        
+
         console.log("Fetched events:", events);
         res.status(200).json(events);
     } catch (error) {
@@ -104,14 +104,15 @@ router.get("/", authenticateUser, async(req,res)=>{
 
 //to GET an array of Dates to highlight events in calendar
 
-router.get("/dates", authenticateUser, async(req,res)=>{
-    try{
+router.get("/dates", authenticateUser, async (req, res) => {
+    try {
         //variables
         const userId = req.userId;
         let collection = await db.collection("events");
 
         const events = await collection.find({
-            createdBy: new ObjectId(userId)}).toArray();
+            createdBy: new ObjectId(userId)
+        }).toArray();
 
         // Extract unique dates
         const eventDates = new Set(events.map(event => {
@@ -163,8 +164,8 @@ router.patch("/update/:id", authenticateUser, async (req, res) => {
 });
 
 //Deleting an Event by user(DELETE)
-router.delete("/delete/:id",authenticateUser, async(req,res)=>{
-    try{
+router.delete("/delete/:id", authenticateUser, async (req, res) => {
+    try {
         const { id } = req.params;
         const userId = req.userId;
 
@@ -186,7 +187,7 @@ router.delete("/delete/:id",authenticateUser, async(req,res)=>{
         }
 
         res.status(200).send("Event deleted successfully");
-    } catch(error){
+    } catch (error) {
         console.error("Failed to delete Event");
         res.status(500).send("Internal Server Error");
     }
@@ -202,53 +203,80 @@ router.delete("/delete/:id",authenticateUser, async(req,res)=>{
 //     }
 // });
 
-//admin approval for events
-//- admin can send a note to the user whilst approval (optional)
-
-router.patch("/admin/approve-or-cancel/:id", authenticateUser, async (req, res) => {
+// Fetch pending events
+router.get("/pending", async (req, res) => {
     try {
-        // Ensure the user is an admin (add admin check logic here if needed)
+        const collection = await db.collection("events");
+        const pendingEvents = await collection.find({ status: "Pending" }).toArray();
+
+        if (!pendingEvents.length) {
+            return res.status(404).json({ message: "No pending events found" });
+        }
+
+        res.status(200).json(pendingEvents);
+    } catch (error) {
+        console.error("Failed to fetch pending events", error);
+        res.status(500).json({ message: "Internal Server Error" });
+    }
+});
+
+// Fetch approved public events
+router.get("/approved", async (req, res) => {
+    try {
+        const collection = await db.collection("events");
+        // Filter to fetch only public and approved events
+        const approvedEvents = await collection.find({ status: "Approved", isPublic: true }).toArray();
+        
+        if (!approvedEvents.length) {
+            return res.status(404).send("No approved public events found");
+        }
+
+        res.status(200).json(approvedEvents);
+    } catch (error) {
+        console.error("Failed to fetch approved public events", error);
+        res.status(500).send("Internal Server Error");
+    }
+});
+
+
+// Approve or cancel event
+router.patch("/approve-or-cancel/:id", async (req, res) => {
+    try {
         const { id } = req.params;
-        const { action } = req.body; // 'action' can be 'approve' or 'cancel'
+        const { action } = req.body;
 
         // Validate the action
         if (!['approve', 'cancel'].includes(action)) {
-            return res.status(400).send("Invalid action");
+            return res.status(400).json({ message: "Invalid action" });
         }
 
         const collection = await db.collection("events");
-
-        // Fetch the event to check its current status
         const event = await collection.findOne({ _id: new ObjectId(id) });
 
         if (!event) {
-            return res.status(404).send("Event not found");
+            return res.status(404).json({ message: "Event not found" });
         }
 
-        // Ensure event is pending for approval
         if (event.status !== "Pending") {
-            return res.status(400).send("Event is not pending approval");
+            return res.status(400).json({ message: "Event is not pending approval" });
         }
 
         if (action === 'approve') {
-            // Approve the event
-            await collection.updateOne(
-                { _id: new ObjectId(id) },
-                { $set: { status: "Approved" } }
-            );
-            return res.status(200).send("Event approved successfully");
+            await collection.updateOne({ _id: new ObjectId(id) }, { $set: { status: "Approved" } });
+            return res.status(200).json({ message: "Event approved successfully" });
+        }
 
-        } else if (action === 'cancel') {
-            // Cancel and remove the event
+        if (action === 'cancel') {
             await collection.deleteOne({ _id: new ObjectId(id) });
-            return res.status(200).send("Event canceled and removed successfully");
+            return res.status(200).json({ message: "Event canceled and removed successfully" });
         }
 
     } catch (error) {
         console.error("Failed to approve or cancel event", error);
-        return res.status(500).send("Internal Server Error");
+        res.status(500).json({ message: "Internal Server Error" });
     }
 });
+
 
 //RSVP for an event store [User Name, Accepted Time,]
 //- only store attending people
