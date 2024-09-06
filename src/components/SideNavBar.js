@@ -8,9 +8,9 @@ const { Sider } = Layout;
 const SideNavigationBar = () => {
 
   const handleLogout = () => {
-  
+
     console.log('Logging out...'); // will do the logout logic later
-  
+
   };
 
   return (
@@ -52,24 +52,14 @@ const SideNavigationBar = () => {
             Profile
           </Link>
         </Menu.Item>
-        <Menu.SubMenu
-          key="notifications"
-          title="Notifications"
-          icon={<NotificationOutlined />}
-        >
-          <Menu.Item key="events">
-            <Link to="/approve-events">
-              <CalendarOutlined />
-              Events
-            </Link>
-          </Menu.Item>
-          <Menu.Item key="announcements">
-            <Link to="/add-announcements">
-              <MailOutlined />
-              Announcements
-            </Link>
-          </Menu.Item>
-        </Menu.SubMenu>
+
+        <Menu.Item key="events">
+          <Link to="/approve-events">
+            <CalendarOutlined />
+            Events
+          </Link>
+        </Menu.Item>
+
         <Menu.Item key="logout" icon={<LogoutOutlined />} onClick={handleLogout}>
           Logout
         </Menu.Item>

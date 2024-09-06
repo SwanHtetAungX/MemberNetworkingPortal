@@ -93,7 +93,8 @@ router.get("/", authenticateUser, async(req,res)=>{
                 $lt: endOfDay
             }
         }).toArray();
-
+        
+        console.log("Fetched events:", events);
         res.status(200).json(events);
     } catch (error) {
         console.error("Failed to retreive Events.");
@@ -208,46 +209,46 @@ router.patch("/admin/approve-or-cancel/:id", authenticateUser, async (req, res) 
     try {
         // Ensure the user is an admin (add admin check logic here if needed)
         const { id } = req.params;
-        const { action } = req.body; // 'action' = 'approve' or 'cancel'
+        const { action } = req.body; // 'action' can be 'approve' or 'cancel'
 
+        // Validate the action
         if (!['approve', 'cancel'].includes(action)) {
             return res.status(400).send("Invalid action");
         }
 
-        let collection = await db.collection("events");
+        const collection = await db.collection("events");
 
         // Fetch the event to check its current status
         const event = await collection.findOne({ _id: new ObjectId(id) });
-        
+
         if (!event) {
             return res.status(404).send("Event not found");
         }
 
+        // Ensure event is pending for approval
         if (event.status !== "Pending") {
             return res.status(400).send("Event is not pending approval");
         }
 
-        let updateData = {};
-        let responseMessage = "";
-
         if (action === 'approve') {
-            updateData.status = "Approved";
-            responseMessage = "Event approved successfully";
-        } else if (action === 'cancel') {
-            await collection.deleteOne({ _id: new ObjectId(id) });
-            responseMessage = "Event canceled and removed successfully";
-        }
-
-        if (action === 'approve') {
+            // Approve the event
             await collection.updateOne(
                 { _id: new ObjectId(id) },
-                { $set: updateData }
+                { $set: { status: "Approved" } }
             );
-        }  } catch (error) {
-            console.error("Failed to approve or cancel event", error);
-            res.status(500).send("Internal Server Error");
+            return res.status(200).send("Event approved successfully");
+
+        } else if (action === 'cancel') {
+            // Cancel and remove the event
+            await collection.deleteOne({ _id: new ObjectId(id) });
+            return res.status(200).send("Event canceled and removed successfully");
         }
-    });
+
+    } catch (error) {
+        console.error("Failed to approve or cancel event", error);
+        return res.status(500).send("Internal Server Error");
+    }
+});
 
 //RSVP for an event store [User Name, Accepted Time,]
 //- only store attending people

@@ -1,7 +1,8 @@
 import React from 'react';
-import { List, Button, Card } from 'antd';
+import { Typography, List, Button, Card } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
 
+const { Text } = Typography;
 const EventCardList = ({ selectedDate, events, onEditEvent, onDeleteEvent, onCreateEvent }) => {
   return (
     <Card
@@ -41,8 +42,16 @@ const EventCardList = ({ selectedDate, events, onEditEvent, onDeleteEvent, onCre
             ]}
           >
             <List.Item.Meta
-              title={event.title}
-              description={`${event.date} - ${event.location}`}
+              // Apply conditional styling based on status
+              title={
+                <span>
+                    {event.title}{' '}
+                    {event.status === 'Pending' && (
+                        <Text type="danger"> (Pending Approval)</Text>
+                    )}
+                </span>
+            }
+            description={`${event.date} - ${event.location}`}
             />
           </List.Item>
         )}
