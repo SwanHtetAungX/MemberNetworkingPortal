@@ -209,10 +209,6 @@ router.get("/pending", async (req, res) => {
         const collection = await db.collection("events");
         const pendingEvents = await collection.find({ status: "Pending" }).toArray();
 
-        if (!pendingEvents.length) {
-            return res.status(404).json({ message: "No pending events found" });
-        }
-
         res.status(200).json(pendingEvents);
     } catch (error) {
         console.error("Failed to fetch pending events", error);
@@ -227,10 +223,6 @@ router.get("/approved", async (req, res) => {
         // Filter to fetch only public and approved events
         const approvedEvents = await collection.find({ status: "Approved", isPublic: true }).toArray();
         
-        if (!approvedEvents.length) {
-            return res.status(404).send("No approved public events found");
-        }
-
         res.status(200).json(approvedEvents);
     } catch (error) {
         console.error("Failed to fetch approved public events", error);
