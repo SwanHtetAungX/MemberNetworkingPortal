@@ -2,7 +2,7 @@ import express from "express";
 import { GridFSBucket, ObjectId } from "mongodb";
 import nodemailer from "nodemailer";
 import multer from "multer";
-import db from "../db/conn.mjs"; // Import your database connection
+import db from "../db/conn.mjs";
 
 const router = express.Router();
 const bucket = new GridFSBucket(db, { bucketName: "uploads" });
@@ -347,15 +347,11 @@ router.delete("/:authorId/:postId", async (req, res) => {
 
 //update content
 router.patch("/:authorId/:postId", async (req, res) => {
-  const { content, authorId } = req.body;
-  if (req.params.authorId !== authorId) {
-    return res.status(403).send("You are not authorized to delete this post");
-  }
-
+  const { content } = req.body;
   try {
     const query = { _id: new ObjectId(req.params.postId) };
     const update = {
-      $set: content,
+      $set: { content: content },
     };
 
     let result = await db.collection("posts").updateOne(query, update);
