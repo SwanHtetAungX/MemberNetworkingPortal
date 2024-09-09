@@ -28,7 +28,7 @@ const ActivityFeedPage = () => {
   const [selectedPostId, setSelectedPostId] = useState("");
   const [selectedAuthorId, setSelectedAuthorId] = useState("");
   const [selectedAuthorEmail, setSelectedAuthorEmail] = useState("");
-  const [confirmVisible, setConfirmVisible] = useState(false);
+
   const token = localStorage.getItem("authToken");
 
   useEffect(() => {
@@ -44,7 +44,7 @@ const ActivityFeedPage = () => {
       );
 
       if (authResponse.status === 401) {
-        setConfirmVisible(true);
+        message.error("Your Session has ended. Log in again to resume.");
         return;
       }
     };
@@ -191,7 +191,7 @@ const ActivityFeedPage = () => {
           okText="Yes"
           cancelText="No"
         >
-          <Button danger>Report</Button>
+          <Button>Report</Button>
         </Popconfirm>
       ),
     },
@@ -280,27 +280,22 @@ const ActivityFeedPage = () => {
                 />
                 <Row>
                   <Paragraph>
-                    {post.FirstName || "Unknown User"} {post.content}
+                    <strong>{profileData.FirstName}</strong> {post.content}
                   </Paragraph>
                 </Row>
+                {post.comments.slice(0, 3).map((comment) => (
+                  <Row key={comment.commentID}>
+                    <Col span={24}>
+                      <Paragraph>
+                        {comment.username || "Unknown User"}: {comment.content}
+                      </Paragraph>
+                    </Col>
+                  </Row>
+                ))}
               </Card>
             </Col>
           ))}
       </Row>
-      <Popconfirm
-        title="Your session has expired. Please relogin"
-        open={confirmVisible}
-        onConfirm={() => {
-          setConfirmVisible(false);
-          window.location.href = "http://localhost:3000/";
-        }}
-        onCancel={() => {
-          setConfirmVisible(false);
-          window.location.href = "http://localhost:3000/";
-        }}
-        okText="Yes"
-        cancelText={null}
-      />
 
       <CommentModal
         commentModalOpen={commentModalOpen}

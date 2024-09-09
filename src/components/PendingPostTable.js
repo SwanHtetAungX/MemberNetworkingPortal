@@ -54,7 +54,10 @@ const PendingPostsTable = () => {
 
   useEffect(() => {
     const filtered = pendingPosts.filter((post) => {
-      return post.author.toLowerCase().includes(searchText.toLowerCase());
+      return (
+        post.author.toLowerCase().includes(searchText.toLowerCase()) ||
+        post.content.toLowerCase().includes(searchText.toLowerCase())
+      );
     });
     setFilteredData(filtered);
   }, [searchText, pendingPosts]);

@@ -8,6 +8,7 @@ import {
   Dropdown,
   Button,
   message,
+  Modal,
 } from "antd";
 import { EllipsisOutlined, MessageOutlined } from "@ant-design/icons";
 import LikeBtn from "./likeBtn";
@@ -21,6 +22,8 @@ const YourActivity = ({ id, profileData, token }) => {
   const [commentModalOpen, setCommentModalOpen] = useState(false);
   const [selectedComments, setSelectedComments] = useState([]);
   const [selectedPostId, setSelectedPostId] = useState("");
+  const [updateModalOpen, setUpdateModalOpen] = useState(false);
+  const [newContent, setNewContent] = useState("");
 
   useEffect(() => {
     const fetchPostsData = async () => {
@@ -112,6 +115,52 @@ const YourActivity = ({ id, profileData, token }) => {
     }
   };
 
+  const handleOpenUpdateModal = (content) => {
+    setNewContent(content);
+    setUpdateModalOpen(true);
+  };
+
+  const handleUpdatePost = async () => {
+    try {
+      const auth = await fetch(`http://localhost:5050/members/authenticate`, {
+        method: "GET",
+        headers: {
+          Authorization: token,
+        },
+      });
+
+      if (auth === false) {
+        message.error("Unauthorized access. Please log in again");
+        return;
+      }
+      const response = await fetch(
+        `http://localhost:5050/posts/${id}/${selectedPostId}`,
+        {
+          method: "PATCH",
+          body: JSON.stringify({ content: newContent }),
+        }
+      );
+
+      if (response.ok) {
+        message.success("Post updated.");
+
+        setActivityFeed((prevFeed) =>
+          prevFeed.map((post) =>
+            post._id === selectedPostId
+              ? { ...post, content: newContent }
+              : post
+          )
+        );
+
+        setUpdateModalOpen(false);
+      } else {
+        message.error("Failed to update post.");
+      }
+    } catch (error) {
+      message.error("Failed to update post.");
+    }
+  };
+
   const items = [
     {
       key: "1",
@@ -128,7 +177,18 @@ const YourActivity = ({ id, profileData, token }) => {
     },
     {
       key: "2",
-      label: <Button type="text">Report</Button>,
+      label: (
+        <Button
+          type="text"
+          onClick={() => {
+            handleOpenUpdateModal(
+              activityFeed.find((post) => post._id === selectedPostId)?.content
+            );
+          }}
+        >
+          Update
+        </Button>
+      ),
     },
   ];
 
@@ -209,9 +269,18 @@ const YourActivity = ({ id, profileData, token }) => {
               />
               <Row>
                 <Paragraph>
-                  {profileData.FirstName} {post.content}
+                  <strong>{profileData.FirstName}</strong> {post.content}
                 </Paragraph>
               </Row>
+              {post.comments.slice(0, 3).map((comment) => (
+                <Row key={comment.commentID}>
+                  <Col span={24}>
+                    <Paragraph>
+                      {comment.username || "Unknown User"}: {comment.content}
+                    </Paragraph>
+                  </Col>
+                </Row>
+              ))}
             </Card>
           </Col>
         ))}
@@ -226,6 +295,19 @@ const YourActivity = ({ id, profileData, token }) => {
         username={`${profileData.FirstName} ${profileData.LastName}`}
         token={token}
       />
+      <Modal
+        title="Update Post"
+        open={updateModalOpen}
+        onCancel={() => setUpdateModalOpen(false)}
+        onOk={handleUpdatePost}
+      >
+        <input
+          type="text"
+          value={newContent}
+          onChange={(e) => setNewContent(e.target.value)}
+          style={{ width: "100%" }}
+        />
+      </Modal>
     </div>
   );
 };
