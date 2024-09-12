@@ -1,6 +1,6 @@
 import express from "express";
 import db from "../db/conn.mjs";
-import nodemailer from 'nodemailer';
+import nodemailer from "nodemailer";
 import { ObjectId } from "mongodb";
 const router = express.Router();
 
@@ -9,26 +9,26 @@ const formatDate = (date) => {
 };
 
 const transporter = nodemailer.createTransport({
-  service: 'gmail', 
+  service: "gmail",
   auth: {
-    user: 'membernetworkingportal@gmail.com',
-    pass: 'fklb cbjd ebxd wbfz'
-  }
+    user: "membernetworkingportal@gmail.com",
+    pass: "fklb cbjd ebxd wbfz",
+  },
 });
 
 const sendEmail = (to, subject, text) => {
   const mailOptions = {
-    from: 'membernetworkingportal@gmail.com',
+    from: "membernetworkingportal@gmail.com",
     to,
     subject,
-    text
+    text,
   };
 
   transporter.sendMail(mailOptions, (error, info) => {
     if (error) {
-      console.log('Error sending email:', error);
+      console.log("Error sending email:", error);
     } else {
-      console.log('Email sent:', info.response);
+      console.log("Email sent:", info.response);
     }
   });
 };
@@ -47,7 +47,9 @@ router.get("/:id", async (req, res) => {
     // Fetch the details of the users who sent the connection requests
     const requestsWithDetails = await Promise.all(
       results.map(async (request) => {
-        const user = await memberCollection.findOne({ _id: new ObjectId(request.userID1) });
+        const user = await memberCollection.findOne({
+          _id: new ObjectId(request.userID1),
+        });
         if (user) {
           return {
             ...request,
@@ -68,18 +70,19 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-
 // Request connection
 router.post("/:id", async (req, res) => {
   try {
     // Fetch the details of the user who is sending the request
-    const sender = await db.collection("members").findOne({ _id: new ObjectId(req.body.userID1) });
+    const sender = await db
+      .collection("members")
+      .findOne({ _id: new ObjectId(req.body.userID1) });
     if (!sender) {
       return res.status(404).send("Sender not found");
     }
-    
+
     const senderFullName = `${sender.FirstName} ${sender.LastName}`;
-    
+
     let newConnection = {
       userID1: req.body.userID1,
       userID2: req.params.id,
@@ -89,7 +92,7 @@ router.post("/:id", async (req, res) => {
     };
 
     let collection = await db.collection("connections");
-    let notificationCollection = await db.collection('notifications');
+    let notificationCollection = await db.collection("notifications");
 
     await collection.insertOne(newConnection);
 
@@ -98,19 +101,25 @@ router.post("/:id", async (req, res) => {
       userID: req.params.id,
       type: "request",
       message: `User ${senderFullName} has sent you a connection request.`,
-      createdAt: new Date()
+      createdAt: new Date(),
     };
     await notificationCollection.insertOne(notification);
-    
+
     // Send email notification
-    const recipient = await db.collection("members").findOne({ _id: new ObjectId(req.params.id) });
+    const recipient = await db
+      .collection("members")
+      .findOne({ _id: new ObjectId(req.params.id) });
     if (!recipient) {
       return res.status(404).send("Recipient not found");
     }
-    
+
     const recipientEmail = recipient.Email;
 
-    sendEmail(recipientEmail, "Connection Request", `${senderFullName} has sent you a connection request.`);
+    sendEmail(
+      recipientEmail,
+      "Connection Request",
+      `${senderFullName} has sent you a connection request.`
+    );
 
     res.status(201).send("Request Sent");
   } catch (error) {
@@ -119,7 +128,6 @@ router.post("/:id", async (req, res) => {
   }
 });
 
-
 // Accept connection
 router.patch("/:id", async (req, res) => {
   try {
@@ -127,19 +135,23 @@ router.patch("/:id", async (req, res) => {
     const requesterId = req.body.userID1;
 
     // Find the user who accepted the connection request
-    const accepter = await db.collection("members").findOne({ _id: new ObjectId(userId) });
+    const accepter = await db
+      .collection("members")
+      .findOne({ _id: new ObjectId(userId) });
     if (!accepter) {
       return res.status(404).send("User not found");
     }
 
     // Find the user who sent the connection request
-    const requester = await db.collection("members").findOne({ _id: new ObjectId(requesterId) });
+    const requester = await db
+      .collection("members")
+      .findOne({ _id: new ObjectId(requesterId) });
     if (!requester) {
       return res.status(404).send("Requester not found");
     }
 
     const collection = await db.collection("connections");
-    const notificationCollection = await db.collection('notifications');
+    const notificationCollection = await db.collection("notifications");
     const query = { userID1: requesterId, userID2: userId };
 
     const update = {
@@ -157,7 +169,7 @@ router.patch("/:id", async (req, res) => {
       userID: requesterId,
       type: "Accept",
       message: notificationMessage,
-      createdAt: new Date()
+      createdAt: new Date(),
     };
 
     await notificationCollection.insertOne(newNotification);
@@ -179,7 +191,7 @@ router.patch("/:id", async (req, res) => {
 router.delete("/:id", async (req, res) => {
   try {
     const collection = await db.collection("connections");
-    const notificationCollection = await db.collection('notifications');
+    const notificationCollection = await db.collection("notifications");
     const query = { userID1: req.body.userID1, userID2: req.params.id };
 
     let result = await collection.deleteOne(query);
@@ -192,11 +204,54 @@ router.delete("/:id", async (req, res) => {
     };
 
     await notificationCollection.insertOne(newNotification);
-    
+
     // Send email notification
-    const user = await db.collection("members").findOne({ _id: new ObjectId(req.body.userID1) });
+    const user = await db
+      .collection("members")
+      .findOne({ _id: new ObjectId(req.body.userID1) });
     const userEmail = user.Email;
-    sendEmail(userEmail, "Connection Declined", `${req.params.id} has declined your connection request.`);
+    sendEmail(
+      userEmail,
+      "Connection Declined",
+      `${req.params.id} has declined your connection request.`
+    );
+
+    res.status(200).send(result);
+  } catch (error) {
+    console.log("Error processing rejection:", error);
+    res.status(500).send("Internal Server Error");
+  }
+});
+
+// remove Connection
+router.delete("/:id/remove", async (req, res) => {
+  try {
+    const collection = await db.collection("connections");
+    const notificationCollection = await db.collection("notifications");
+    const query = { _id: new ObjectId(req.params.id) };
+
+    let result = await collection.deleteOne(query);
+
+    let newNotification = {
+      userID: req.body.userID1,
+      type: "Reject",
+      message: `${req.params.id} has removed your connection`,
+      createdAt: new Date(),
+    };
+
+    console.log(req.body.userID1);
+    await notificationCollection.insertOne(newNotification);
+
+    // Send email notification
+    const user = await db
+      .collection("members")
+      .findOne({ _id: new ObjectId(req.body.userID1) });
+    const userEmail = user.Email;
+    sendEmail(
+      userEmail,
+      "Connection Declined",
+      `${req.params.id} has declined your connection request.`
+    );
 
     res.status(200).send(result);
   } catch (error) {
@@ -235,27 +290,35 @@ router.get("/:id/:userID1/checker", async (req, res) => {
 router.get("/connections/:id", async (req, res) => {
   try {
     let collection = await db.collection("connections");
-    const results = await collection.find({
-      $or: [{ userID1: req.params.id }, { userID2: req.params.id }],
-      status: "Accept"
-    }).toArray();
+    const results = await collection
+      .find({
+        $or: [{ userID1: req.params.id }, { userID2: req.params.id }],
+        status: "Accept",
+      })
+      .toArray();
 
-    const users = await Promise.all(results.map(async (conn) => {
-      const userId = conn.userID1 === req.params.id ? conn.userID2 : conn.userID1;
-      const user = await db.collection("members").findOne({_id: new ObjectId(userId)});
-      if (!user) {
-        return { ...conn, connectedUser: null }; 
-      }
-      return {
-        ...conn,
-        connectedUser: {
-          FirstName: user.FirstName || "Unknown",
-          LastName: user.LastName || "Unknown",
-          Email: user.Email || "No email",
-          ProfilePic: user.ProfilePic || undefined
+    const users = await Promise.all(
+      results.map(async (conn) => {
+        const userId =
+          conn.userID1 === req.params.id ? conn.userID2 : conn.userID1;
+        const user = await db
+          .collection("members")
+          .findOne({ _id: new ObjectId(userId) });
+        if (!user) {
+          return { ...conn, connectedUser: null };
         }
-      };
-    }));
+        return {
+          ...conn,
+          connectedUser: {
+            FirstName: user.FirstName || "Unknown",
+            LastName: user.LastName || "Unknown",
+            Email: user.Email || "No email",
+            ProfilePic: user.ProfilePic || undefined,
+            userId: user._id,
+          },
+        };
+      })
+    );
 
     res.status(200).send(users);
   } catch (error) {
@@ -267,17 +330,25 @@ router.get("/connections/:id", async (req, res) => {
 // Get notifications for a user
 router.get("/notifications/:id", async (req, res) => {
   try {
-    let notificationCollection = await db.collection('notifications');
-    let notifications = await notificationCollection.find({ userID: req.params.id }).toArray();
+    let notificationCollection = await db.collection("notifications");
+    let notifications = await notificationCollection
+      .find({ userID: req.params.id })
+      .toArray();
 
     // Fetch each user's details and attach it to each notification
-    const enhancedNotifications = await Promise.all(notifications.map(async (notification) => {
-      const user = await db.collection("members").findOne({ _id: new ObjectId(notification.userID) });
-      return {
-        ...notification,
-        userName: user ? `${user.FirstName} ${user.LastName}` : 'Unknown User'
-      };
-    }));
+    const enhancedNotifications = await Promise.all(
+      notifications.map(async (notification) => {
+        const user = await db
+          .collection("members")
+          .findOne({ _id: new ObjectId(notification.userID) });
+        return {
+          ...notification,
+          userName: user
+            ? `${user.FirstName} ${user.LastName}`
+            : "Unknown User",
+        };
+      })
+    );
 
     res.status(200).send(enhancedNotifications);
   } catch (error) {

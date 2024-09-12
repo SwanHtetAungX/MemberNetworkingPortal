@@ -16,12 +16,24 @@ const ProfilePicModal = ({
   id,
   profilePicModalOpen,
   setProfilePicModalOpen,
+  token,
 }) => {
   const [uploading, setUploading] = useState(false);
   const [file, setFile] = useState(null);
   const [preview, setPreview] = useState(null);
 
-  const handleUpload = () => {
+  const handleUpload = async () => {
+    const auth = await fetch(`http://localhost:5050/members/authenticate`, {
+      method: "GET",
+      headers: {
+        Authorization: token,
+      },
+    });
+
+    if (auth === false) {
+      message.error("Unauthorized access. Please log in again");
+      return;
+    }
     if (!file) {
       message.error("No file selected.");
       return;
@@ -29,10 +41,11 @@ const ProfilePicModal = ({
 
     const formData = new FormData();
     formData.append("profilePic", file);
+    formData.append("field", "ProfilePic");
 
     setUploading(true);
 
-    fetch(`http://localhost:5050/members/${id}/ProfilePic`, {
+    await fetch(`http://localhost:5050/members/${id}/ProfilePic`, {
       method: "PATCH",
       body: formData,
     })
@@ -46,7 +59,6 @@ const ProfilePicModal = ({
       })
       .finally(() => {
         setUploading(false);
-        window.location.reload();
       });
   };
 
@@ -59,6 +71,7 @@ const ProfilePicModal = ({
       setPreview(reader.result);
     };
     reader.readAsDataURL(file.originFileObj);
+    console.log(file);
 
     return false; // Prevent automatic upload
   };
