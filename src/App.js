@@ -20,7 +20,7 @@ import SignUp from './components/sign-up';
 import Login from './components/login-form';
 import TwoFactorAuth from './components/twoFA';
 import AdminLogin from './components/admin-login';
-
+import Chat from './pages/Chat/Chat'
 const { Content } = Layout;
 
 const AppLayout = () => {
@@ -43,6 +43,7 @@ const AppLayout = () => {
               <Route path="/verify-2fa" element={<TwoFactorAuth />} />
               <Route path="/signup" element={<SignUp />} />
               <Route path="/profilePage/:id" element={<ProfilePage />} />
+              <Route path='/chat' element={<Chat/>} />
             </Routes>
                
           </Content>

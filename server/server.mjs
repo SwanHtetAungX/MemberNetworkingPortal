@@ -4,6 +4,8 @@ import cors from "cors";
 import members from "./routes/member.mjs";
 import connection from "./routes/connections.mjs"; 
 import admin from "./routes/admin.mjs"
+import messages from "./routes/messages.mjs"
+import conversation from "./routes/conversation.mjs"
 import dotenv from "dotenv";
 dotenv.config(); 
 
@@ -24,6 +26,8 @@ app.use(express.json());
 app.use("/members", members);
 app.use("/connection", connection);
 app.use("/admin", admin)
+app.use("/conversation", conversation)
+app.use("/message",messages)
 // Start the server and listen on the port
 app.listen(PORT, () => {
   console.log(`Server is running on port: http://localhost:${PORT}`);

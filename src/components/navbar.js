@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Layout, Menu, Input, Row, Col, Typography, Drawer, Button } from "antd";
-import { HomeOutlined, UserOutlined, TeamOutlined, BellOutlined, SearchOutlined, MenuOutlined } from "@ant-design/icons";
+import { HomeOutlined, UserOutlined, TeamOutlined, BellOutlined, SearchOutlined, MenuOutlined,MessageOutlined } from "@ant-design/icons";
 import { Link } from "react-router-dom";
 import axios from "axios";
 import SearchResults from "./SearchResult";
@@ -67,6 +67,9 @@ const Navbar = () => {
       </Menu.Item>
       <Menu.Item key="4" icon={<BellOutlined />} style={{ margin: 0,paddingLeft: "28px" }} >
         <Link to={"/notification"} />
+      </Menu.Item>
+      <Menu.Item key="5" icon={<MessageOutlined />} style={{ margin: 0,paddingLeft: "28px" }} >
+        <Link to={"/chat"} />
       </Menu.Item>
     </Menu>
   );
