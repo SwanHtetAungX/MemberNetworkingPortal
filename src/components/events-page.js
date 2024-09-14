@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Typography, Modal, Button, Form, Input, Checkbox } from 'antd';
+import { Typography, Modal, Button, Form, Input, Checkbox} from 'antd';
 import EventCalendar from './eventCalendar';
 import EventCardList from './eventCardList';
 

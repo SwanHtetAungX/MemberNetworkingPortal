@@ -22,8 +22,11 @@ const authenticateUser = (req, res, next) => {
     }
 };
 
+//nodemail for sending mail when event gets approved.
+//send notifications as to when event gets approved or cancelled. 
+
 // Creating an event by user (POST)
-//Uploading Image or Promo Video for event
+
 router.post("/create", authenticateUser, async (req, res) => {
     try {
         const { title, date, location, time, description, isPublic } = req.body;
@@ -41,10 +44,9 @@ router.post("/create", authenticateUser, async (req, res) => {
             time,
             description,
             isPublic: isPublic || false,
-            //attendeeNumber,
             createdBy: new ObjectId(req.userId),
             createdAt: new Date(),
-            status: isPublic ? "Pending" : "Approved"
+            status: isPublic ? "Pending" : "Approved",
         };
 
         //- private events don't need approval, they cannot invite
@@ -193,16 +195,6 @@ router.delete("/delete/:id", authenticateUser, async (req, res) => {
     }
 });
 
-//Sending an Public Event invite to user
-// router.post("/invite", async(req,res)=>{
-//     try{
-
-//     } catch(error){
-//         console.error("Failed to send Event Invite");
-//         res.status(500).send("Internal Server Error");
-//     }
-// });
-
 // Fetch pending events
 router.get("/pending", async (req, res) => {
     try {
@@ -232,18 +224,23 @@ router.get("/approved", async (req, res) => {
 
 
 // Approve or cancel event
+//Once admin approves event
+//Event Creator gets approval notification
+//Invitees receive RSVP notification
 router.patch("/approve-or-cancel/:id", async (req, res) => {
     try {
         const { id } = req.params;
         const { action } = req.body;
+        const eventsCollection = await db.collection('events');
+        const notificationsCollection = await db.collection('notifications');
+        const usersCollection = await db.collection('members');  // Assuming you have a users collection
 
         // Validate the action
         if (!['approve', 'cancel'].includes(action)) {
             return res.status(400).json({ message: "Invalid action" });
         }
 
-        const collection = await db.collection("events");
-        const event = await collection.findOne({ _id: new ObjectId(id) });
+        const event = await eventsCollection.findOne({ _id: new ObjectId(id) });
 
         if (!event) {
             return res.status(404).json({ message: "Event not found" });
@@ -253,13 +250,38 @@ router.patch("/approve-or-cancel/:id", async (req, res) => {
             return res.status(400).json({ message: "Event is not pending approval" });
         }
 
+        // If approving the event
         if (action === 'approve') {
-            await collection.updateOne({ _id: new ObjectId(id) }, { $set: { status: "Approved" } });
-            return res.status(200).json({ message: "Event approved successfully" });
+            await eventsCollection.updateOne(
+                { _id: new ObjectId(id) },
+                { $set: { status: "Approved" } }
+            );
+
+            // Find the user who created the event
+            const user = await usersCollection.findOne({ _id: new ObjectId(event.createdBy) });
+
+            if (user) {
+                // Create the notification message
+                const notificationMessage = `Your event "${event.title}" has been approved.`;
+
+                // Inserting notification  into the 'notifications' 
+                await notificationsCollection.insertOne({
+                    userID: user._id.toString(),  
+                    type: "EventApproval",  
+                    message: notificationMessage,
+                    createdAt: new Date()
+                });
+
+                return res.status(200).json({ message: "Event approved and notifications sent" });
+            } else {
+                console.error('User who created the event not found');
+                return res.status(404).json({ message: "User not found" });
+            }
         }
 
+        // If canceling the event
         if (action === 'cancel') {
-            await collection.deleteOne({ _id: new ObjectId(id) });
+            await eventsCollection.deleteOne({ _id: new ObjectId(id) });
             return res.status(200).json({ message: "Event canceled and removed successfully" });
         }
 
@@ -268,13 +290,5 @@ router.patch("/approve-or-cancel/:id", async (req, res) => {
         res.status(500).json({ message: "Internal Server Error" });
     }
 });
-
-
-//RSVP for an event store [User Name, Accepted Time,]
-//- only store attending people
-
-//Share as Post
-
-//Sending an Public Event invite to user
 
 export default router;

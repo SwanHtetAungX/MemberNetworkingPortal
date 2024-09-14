@@ -65,7 +65,7 @@ const NotificationPage = () => {
                 avatar={<Avatar size="large" style={{ backgroundColor: '#1890ff' }} icon={<NotificationOutlined />} />}
                 title={
                   <Typography.Text strong style={{ fontSize: '16px' }}>
-                    {`${item.type} from ${item.userName}`}
+                    {`${item.type} for ${item.userName}`}
                   </Typography.Text>
                 }
                 description={
