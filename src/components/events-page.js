@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Typography, Modal, Button, Form, Input, Checkbox} from 'antd';
+import { Typography, Modal, Button, Form, Input, Checkbox, Select} from 'antd';
 import EventCalendar from './eventCalendar';
 import EventCardList from './eventCardList';
 
 const { Title } = Typography;
+const { Option } = Select;
 
 const EventPage = () => {
     const [selectedDate, setSelectedDate] = useState(null);
@@ -12,6 +13,8 @@ const EventPage = () => {
     const [isCreateModalVisible, setCreateModalVisible] = useState(false);
     const [isEditModalVisible, setEditModalVisible] = useState(false);
     const [currentEvent, setCurrentEvent] = useState(null);
+    const [isPublicEvent, setIsPublicEvent] = useState(false);
+    const [emails, setEmails] = useState([]);
     const [form] = Form.useForm(); // Form instance for Create and Edit
 
     
@@ -53,6 +56,16 @@ const EventPage = () => {
         if (selectedDate) fetchEvents(selectedDate);
     }, [selectedDate]);
 
+
+    const handlePublicCheckboxChange = (e) => {
+        setIsPublicEvent(e.target.checked); // Set public event state
+    };
+
+    // Handle Email Input change
+    const handleEmailChange = (e) => {
+        setEmails(e.target.value.split(',').map(email => email.trim())); // Split emails by comma, trim spaces
+    };
+
     // Handle Create Event
     const handleCreateEvent = async (values) => {
         try {
@@ -66,10 +79,13 @@ const EventPage = () => {
                 body: JSON.stringify({
                     ...values,
                     date: selectedDate, // Set the selected date as the event date
+                    invitees: isPublicEvent ? emails : [],
                 }),
             });
             setCreateModalVisible(false);
             form.resetFields(); // Reset form after submission
+            setEmails([]); //reset email field
+            setIsPublicEvent(false); // Reset public event state
             fetchEvents(selectedDate);  // Refresh events list
             await refreshEventDates();// call function to update calendar
         } catch (error) {
@@ -126,6 +142,7 @@ const EventPage = () => {
         form.setFieldsValue(event);  // Populate form with event data for editing
         setEditModalVisible(true);
     };
+
 
     return (
         <div className="mt-5">
@@ -191,8 +208,19 @@ const EventPage = () => {
                         valuePropName="checked"
                         label="Public Event"
                     >
-                        <Checkbox />
+                        <Checkbox onChange={handlePublicCheckboxChange} />
                     </Form.Item>
+
+                    {/* Conditionally render the Invitees field */}
+                    {isPublicEvent && (
+                        <Form.Item
+                            name="invitees"
+                            label="Invite Users Emails separated by commas"
+                        >
+                            <Input placeholder="Enter email addresses separated by commas" onChange={handleEmailChange} />
+                        </Form.Item>
+                    )}
+
                     <Form.Item>
                         <Button type="primary" htmlType="submit">
                             Save Event

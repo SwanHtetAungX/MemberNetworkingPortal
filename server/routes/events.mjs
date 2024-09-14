@@ -3,11 +3,21 @@ import db from "../db/conn.mjs";
 import { ObjectId } from "mongodb";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
+import nodemailer from "nodemailer";
 
 dotenv.config();
 
 const router = express.Router();
 const JWT_SECRET = process.env.JWT_SECRET || "your-jwt-secret-key";
+
+//send email to invitees
+const transporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+        user: 'membernetworkingportal@gmail.com',
+        pass: 'fklb cbjd ebxd wbfz',
+    },
+});
 
 // Middleware to authenticate the user
 const authenticateUser = (req, res, next) => {
@@ -29,7 +39,7 @@ const authenticateUser = (req, res, next) => {
 
 router.post("/create", authenticateUser, async (req, res) => {
     try {
-        const { title, date, location, time, description, isPublic } = req.body;
+        const { title, date, location, time, description, isPublic, invitees } = req.body;
 
         if (!title || !date || !location) {
             return res.status(400).send("Title, date, and location are required");
@@ -47,6 +57,7 @@ router.post("/create", authenticateUser, async (req, res) => {
             createdBy: new ObjectId(req.userId),
             createdAt: new Date(),
             status: isPublic ? "Pending" : "Approved",
+            invitees: invitees || []
         };
 
         //- private events don't need approval, they cannot invite
@@ -214,7 +225,7 @@ router.get("/approved", async (req, res) => {
         const collection = await db.collection("events");
         // Filter to fetch only public and approved events
         const approvedEvents = await collection.find({ status: "Approved", isPublic: true }).toArray();
-        
+
         res.status(200).json(approvedEvents);
     } catch (error) {
         console.error("Failed to fetch approved public events", error);
@@ -264,15 +275,51 @@ router.patch("/approve-or-cancel/:id", async (req, res) => {
                 // Create the notification message
                 const notificationMessage = `Your event "${event.title}" has been approved.`;
 
-                // Inserting notification  into the 'notifications' 
+                // Inserting notification into the 'notifications' collection
                 await notificationsCollection.insertOne({
-                    userID: user._id.toString(),  
-                    type: "EventApproval",  
+                    userID: user._id.toString(),
+                    type: "EventApproval",
                     message: notificationMessage,
                     createdAt: new Date()
                 });
 
-                return res.status(200).json({ message: "Event approved and notifications sent" });
+                // Notify the invitees via email
+                if (event.isPublic && event.invitees && event.invitees.length > 0) {
+                    const emailPromises = event.invitees.map(async (email) => {
+                        // Send email to each invitee
+                        await transporter.sendMail({
+                            from: process.env.EMAIL_USER,
+                            to: email,
+                            subject: `Invitation to Event: ${event.title}`,
+                            text: `You have been invited to the event "${event.title}". Location: ${event.location}, Date: ${new Date(event.date).toDateString()}, Time: ${event.time}.`,
+                        });
+
+                        // Check if the invitee is a member and send an in-app notification
+                        const inviteeUser = await usersCollection.findOne({ email });
+                        if (inviteeUser) {
+                            console.log(`Invitee is a member: ${inviteeUser.email}`);
+
+                            // Inserting notification for the invitee if they are a member
+                            await notificationsCollection.insertOne({
+                                userID: inviteeUser._id.toString(),
+                                type: "EventInvite",
+                                message: `You have been invited to the event "${event.title}".`,
+                                eventTitle: event.title,
+                                createdAt: new Date()
+                            });
+
+                            const notificationResult = await notificationsCollection.insertOne(notificationData);
+
+                            // Log notification storage success
+                            console.log(`Notification stored for invitee: ${inviteeUser.email}, Notification ID: ${notificationResult.insertedId}`);
+                        }
+                    });
+
+                    // Wait for all emails to be sent
+                    await Promise.all(emailPromises);
+                }
+
+                return res.status(200).json({ message: "Event approved, notifications and email invites sent" });
             } else {
                 console.error('User who created the event not found');
                 return res.status(404).json({ message: "User not found" });
@@ -290,5 +337,6 @@ router.patch("/approve-or-cancel/:id", async (req, res) => {
         res.status(500).json({ message: "Internal Server Error" });
     }
 });
+
 
 export default router;
