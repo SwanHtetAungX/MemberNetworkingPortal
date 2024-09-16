@@ -1,12 +1,12 @@
 
-import React from 'react';
+import React,{useState, useEffect} from 'react';
 import { BrowserRouter as Router, Routes, Route,useLocation } from 'react-router-dom';
 import { Layout } from 'antd';
 import SideNavigationBar from './components/SideNavBar';
 import AddMemberPage from './pages/AddMemberPage';
 import MembersPage from './pages/MemberPage';
 import AdminProfile from './pages/AdminProfilePage';
-import NotificationPage from './pages/NotificationPage';
+import NotificationPage from './pages/Notifications/NotificationPage';
 import ConnectionPage from './pages/ConnectionPage';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
@@ -21,12 +21,51 @@ import Login from './components/login-form';
 import TwoFactorAuth from './components/twoFA';
 import AdminLogin from './components/admin-login';
 import Chat from './pages/Chat/Chat'
+import Announcement from './components/Announcements/Announcements';
+import AnnouncementBanner from './components/Announcements/AnnouncementBanner';
+import io from 'socket.io-client';
 const { Content } = Layout;
 
+const socket = io('http://localhost:8900');
+
 const AppLayout = () => {
+
+  const [refreshAnnouncements, setRefreshAnnouncements] = useState(false);
+
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  useEffect(() => {
+    socket.on('refreshApp', () => {
+      setRefreshKey(prevKey => prevKey + 1);
+    });
+
+    return () => {
+      socket.off('refreshApp');
+    };
+  }, []);
+
+  
+  const handleAcknowledged = () => {
+    setRefreshAnnouncements(prev => !prev);
+  };
+
+  useEffect(() => {
+    socket.on('refreshAnnouncements', () => {
+      setRefreshAnnouncements(prev => !prev);
+    });
+
+    return () => {
+      socket.off('refreshAnnouncements');
+    };
+  }, []);
+const id = sessionStorage.getItem("id");
+
+
+
   return (
     <Router>
-      <Layout style={{ minHeight: '100vh' }}>
+      <Layout style={{ minHeight: '100vh' }} key={refreshKey}>
+      {<AnnouncementBanner onAcknowledged={handleAcknowledged} />}
         <ConditionaNavBar />
         <ConditionalSidebar />
         <Layout>
@@ -44,6 +83,7 @@ const AppLayout = () => {
               <Route path="/signup" element={<SignUp />} />
               <Route path="/profilePage/:id" element={<ProfilePage />} />
               <Route path='/chat' element={<Chat/>} />
+              <Route path='/announcement' element={<Announcement refreshFlag={refreshAnnouncements} />} />
             </Routes>
                
           </Content>
@@ -59,7 +99,7 @@ const ConditionalSidebar = () => {
   const location = useLocation(); 
 
   // Conditionally render the sidebar based on the path
-  if (location.pathname === '/admin-profile' || location.pathname=== '/view-member' || location.pathname==="/add-member") {
+  if (location.pathname === '/admin-profile' || location.pathname=== '/view-member' || location.pathname==="/add-member" || location.pathname === '/announcement') {
     return <SideNavigationBar />;
   }
   return null;
@@ -68,7 +108,7 @@ const ConditionalSidebar = () => {
 const ConditionaNavBar = () => {
   const location = useLocation();
 
-  if (location.pathname === '/login' || location.pathname === '/signup' || location.pathname === '/admin-login' || location.pathname === '/admin-profile' || location.pathname === '/view-member' || location.pathname === '/add-member' || location.pathname === '/'){
+  if (location.pathname === '/login' || location.pathname === '/signup' || location.pathname === '/admin-login' || location.pathname === '/admin-profile' || location.pathname === '/view-member' || location.pathname === '/add-member' || location.pathname === '/' || location.pathname === '/announcement'){
     return null;
   }
   return <Navbar />;

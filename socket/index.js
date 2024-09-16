@@ -42,11 +42,28 @@ io.on("connection", (socket) => {
         
     })
 
+   
+    socket.on("announcementAcknowledged", () => {
+        
+        io.emit("refreshAnnouncements");
+    });
+
+    socket.on("newAnnouncementCreated", () => {
+        io.emit("refreshApp");
+    });
+
+
+
+
+    
+
     socket.on("disconnect", () => {
         console.log("a user disconnected!");
         removeUser(socket.id);
         io.emit("getUsers", users)
     })
+
+
 
     
 })
