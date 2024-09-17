@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { List, Card, Avatar, Spin, Alert, Typography } from 'antd';
-import { NotificationOutlined } from '@ant-design/icons';
+import { List, Card, Avatar, Spin, Alert, Typography} from 'antd';
+import { NotificationOutlined, MailOutlined } from '@ant-design/icons';
+import EventPage from '../components/events-page';
 
 const { Title } = Typography;
 
@@ -58,10 +59,16 @@ const NotificationPage = () => {
               }}
             >
               <List.Item.Meta
-                avatar={<Avatar size="large" style={{ backgroundColor: '#1890ff' }} icon={<NotificationOutlined />} />}
+                avatar={
+                  <Avatar size="large" style={{ backgroundColor: '#1890ff' }}>
+                    {item.type === 'EventInvite' ? <MailOutlined /> : <NotificationOutlined />}
+                  </Avatar>
+                }
                 title={
                   <Typography.Text strong style={{ fontSize: '16px' }}>
-                    {`${item.type} from ${item.userName}`}
+                    {item.type === 'EventInvite'
+                      ? `You have been invited to ${item.eventTitle}`
+                      : `${item.type} for ${item.userName}`}
                   </Typography.Text>
                 }
                 description={
@@ -69,11 +76,13 @@ const NotificationPage = () => {
                     {item.message}
                   </Typography.Text>
                 }
+
               />
             </List.Item>
           )}
         />
       </Card>
+      <EventPage />
     </div>
   );
 };

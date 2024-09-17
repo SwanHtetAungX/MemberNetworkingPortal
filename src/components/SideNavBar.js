@@ -1,19 +1,15 @@
-import React from "react";
-import { Layout, Menu } from "antd";
-import {
-  UserAddOutlined,
-  UserOutlined,
-  ProfileOutlined,
-  LogoutOutlined,
-  FileImageOutlined,
-} from "@ant-design/icons";
-import { Link } from "react-router-dom";
+
+import React from 'react';
+import { Layout, Menu } from 'antd';
+import { UserAddOutlined, UserOutlined, ProfileOutlined, LogoutOutlined,  CalendarOutlined, FileImageOutlined, } from '@ant-design/icons';
+import { Link } from 'react-router-dom';
+
 
 const { Sider } = Layout;
 
 const SideNavigationBar = () => {
   const handleLogout = () => {
-    console.log("Logging out..."); // will do the logout logic later
+    console.log('Logging out...'); 
   };
 
   return (
@@ -56,12 +52,19 @@ const SideNavigationBar = () => {
         <Menu.Item key="admin-profile" icon={<ProfileOutlined />}>
           <Link to="/admin-profile">Profile</Link>
         </Menu.Item>
-        <Menu.Item
-          key="logout"
-          icon={<LogoutOutlined />}
-          onClick={handleLogout}
-        >
+
+        <Menu.Item key="events">
+          <Link to="/approve-events">
+            <CalendarOutlined />
+            Events
+          </Link>
+        </Menu.Item>
+
+        <Menu.Item key="logout" icon={<LogoutOutlined />} onClick={handleLogout}>
+        <Link to="/login">
+
           Logout
+        </Link>
         </Menu.Item>
       </Menu>
     </Sider>
