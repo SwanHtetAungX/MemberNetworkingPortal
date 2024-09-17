@@ -114,7 +114,8 @@ const ConditionalSidebar = () => {
     location.pathname === "/view-member" ||
     location.pathname === "/add-member" ||
     location.pathname === "/approve-events" ||
-    location.pathname === "/announcement"
+    location.pathname === "/announcement" ||
+    location.pathname === "/view-posts"
   ) {
     return <SideNavigationBar />;
   }
@@ -133,7 +134,8 @@ const ConditionaNavBar = () => {
     location.pathname === "/add-member" ||
     location.pathname === "/" ||
     location.pathname === "/approve-events" ||
-    location.pathname === "/announcement"
+    location.pathname === "/announcement" ||
+    location.pathname === "/view-posts"
   ) {
     return null;
   }
