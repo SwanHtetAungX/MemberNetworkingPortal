@@ -6,17 +6,28 @@ import 'react-quill/dist/quill.snow.css';
 import axios from 'axios';
 import moment from 'moment';
 import io from 'socket.io-client';
-import { ClockCircleOutlined, DeleteOutlined, UserOutlined, SmileOutlined } from '@ant-design/icons';
+import { ClockCircleOutlined, DeleteOutlined, UserOutlined, SmileOutlined,BulbOutlined } from '@ant-design/icons';
+import Openai from 'openai';
 
 const { TextArea } = Input;
 
 
+
+
 const socket = io('http://localhost:8900');
+
+
+const openai = new Openai({
+  apiKey:process.env.REACT_APP_CHATGPT_API_KEY ,
+  dangerouslyAllowBrowser: true
+
+})
 
 const AnnouncementForm = ({ refreshFlag}) => {
   const [content, setContent] = useState('');
   const [announcements, setAnnouncements] = useState([]);
   const [users, setUsers] = useState({}); 
+  const [loadingAI, setLoadingAI] = useState(false);
 
   useEffect(() => {
     fetchAnnouncements();
@@ -99,6 +110,38 @@ const AnnouncementForm = ({ refreshFlag}) => {
     }
   };
 
+  const handleAISuggestion = async () => {
+    setLoadingAI(true);
+
+    try{
+      const response = await openai.chat.completions.create({
+        model: 'gpt-3.5-turbo',
+        messages: [
+          { role: 'system', content: 'You are a helpful assistant that generates professional announcement content.' },
+          { role: 'user', content: `Provide a professional announcement content based on the following content: ${content}` }
+        ],
+        max_tokens: 100,
+      });
+
+    
+
+      console.log('Received response from OpenAI:', response);
+
+    if (response && response.choices && response.choices.length > 0) {
+      const suggestion = response.choices[0].message.content.trim();
+      setContent((prevContent) => `${prevContent}\n\n${suggestion}`);
+    } else {
+      throw new Error('Unexpected response format from OpenAI');
+    }
+
+    } catch(err){
+      console.log('Error Fetching AI suggestion:' , err);
+      message.error('Failed to get content suggestion from AI. ');
+    } finally {
+      setLoadingAI(false);
+    }
+  }
+
   return (
     <div className="announcement-container">
       <Row gutter={[16, 16]} justify="center">
@@ -124,6 +167,16 @@ const AnnouncementForm = ({ refreshFlag}) => {
               </Form.Item>
               <Form.Item label="Content">
                 <ReactQuill value={content} onChange={setContent} />
+                <Button
+                  type="default"
+                  icon={<BulbOutlined />}
+                  onClick={handleAISuggestion}
+                  loading={loadingAI}
+                  style={{ marginTop: '10px' }}
+                  block
+                >
+                  Get AI Suggestion
+                </Button>
               </Form.Item>
               <Button type="primary" htmlType="submit" block>
                 Create Announcement
