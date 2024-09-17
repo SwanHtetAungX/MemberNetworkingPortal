@@ -187,42 +187,6 @@ router.patch("/:id", async (req, res) => {
   }
 });
 
-// Decline Connection
-router.delete("/:id", async (req, res) => {
-  try {
-    const collection = await db.collection("connections");
-    const notificationCollection = await db.collection("notifications");
-    const query = { userID1: req.body.userID1, userID2: req.params.id };
-
-    let result = await collection.deleteOne(query);
-
-    let newNotification = {
-      userID: req.body.userID1,
-      type: "Reject",
-      message: `${req.params.id} has declined your connection request.`,
-      createdAt: new Date(),
-    };
-
-    await notificationCollection.insertOne(newNotification);
-
-    // Send email notification
-    const user = await db
-      .collection("members")
-      .findOne({ _id: new ObjectId(req.body.userID1) });
-    const userEmail = user.Email;
-    sendEmail(
-      userEmail,
-      "Connection Declined",
-      `${req.params.id} has declined your connection request.`
-    );
-
-    res.status(200).send(result);
-  } catch (error) {
-    console.log("Error processing rejection:", error);
-    res.status(500).send("Internal Server Error");
-  }
-});
-
 // remove Connection
 router.delete("/:id/remove", async (req, res) => {
   try {
@@ -230,12 +194,20 @@ router.delete("/:id/remove", async (req, res) => {
     const notificationCollection = await db.collection("notifications");
     const query = { _id: new ObjectId(req.params.id) };
 
+    // Find the user who removed the connection request
+    const remover = await db
+      .collection("members")
+      .findOne({ _id: new ObjectId(req.params.id) });
+    if (!remover) {
+      return res.status(404).send("User not found");
+    }
+
     let result = await collection.deleteOne(query);
 
     let newNotification = {
       userID: req.body.userID1,
       type: "Reject",
-      message: `${req.params.id} has removed your connection`,
+      message: `${remover.FirstName} ${remover.LastName} has removed your connection`,
       createdAt: new Date(),
     };
 
@@ -249,8 +221,52 @@ router.delete("/:id/remove", async (req, res) => {
     const userEmail = user.Email;
     sendEmail(
       userEmail,
+      "Connection Removed",
+      `${remover.FirstName} ${remover.LastName} has removed your connection request.`
+    );
+
+    res.status(200).send(result);
+  } catch (error) {
+    console.log("Error processing rejection:", error);
+    res.status(500).send("Internal Server Error");
+  }
+});
+
+// Decline Connection
+router.delete("/:id", async (req, res) => {
+  try {
+    const collection = await db.collection("connections");
+    const notificationCollection = await db.collection("notifications");
+    const query = { userID1: req.body.userID1, userID2: req.params.id };
+
+    // Find the user who declined the connection request
+    const remover = await db
+      .collection("members")
+      .findOne({ _id: new ObjectId(req.params.id) });
+    if (!remover) {
+      return res.status(404).send("User not found");
+    }
+
+    let result = await collection.deleteOne(query);
+
+    let newNotification = {
+      userID: req.body.userID1,
+      type: "Reject",
+      message: `${remover.FirstName} ${remover.LastName} has declined your connection request.`,
+      createdAt: new Date(),
+    };
+
+    await notificationCollection.insertOne(newNotification);
+
+    // Send email notification
+    const user = await db
+      .collection("members")
+      .findOne({ _id: new ObjectId(req.body.userID1) });
+    const userEmail = user.Email;
+    sendEmail(
+      userEmail,
       "Connection Declined",
-      `${req.params.id} has declined your connection request.`
+      `${remover.FirstName} ${remover.LastName} has declined your connection request.`
     );
 
     res.status(200).send(result);
