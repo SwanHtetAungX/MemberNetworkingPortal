@@ -1,10 +1,12 @@
 import React, { useState } from "react";
+
+
 import { Layout, Menu, Input, Row, Col, Typography, Drawer, Button } from "antd";
-import { HomeOutlined, UserOutlined, TeamOutlined, BellOutlined, SearchOutlined, MenuOutlined,LogoutOutlined, MessageOutlined } from "@ant-design/icons";
+import { HomeOutlined, UserOutlined, TeamOutlined, BellOutlined, SearchOutlined, MenuOutlined,LogoutOutlined, MessageOutlined, KeyOutlined } from "@ant-design/icons";
 import { Link } from "react-router-dom";
 import axios from "axios";
 import SearchResults from "./SearchResult";
-
+import ChangePwdModal from "../components/changePwdModal";
 const { Header } = Layout;
 const { Title } = Typography;
 
@@ -14,6 +16,7 @@ const Navbar = () => {
   const [searchResults, setSearchResults] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [showResults, setShowResults] = useState(false); // State to manage the visibility of search results
+  const [changePwdModalOpen, setChangePwdModalOpen] = useState(false);
 
   const handleSearch = async (e) => {
     const query = e.target.value;
@@ -63,16 +66,23 @@ const Navbar = () => {
         margin: 0,
       }}
     >
-
-      <Menu.Item key="1" icon={<HomeOutlined />} style={{ margin: 0,paddingLeft: "28px"}}>
-        <Link to="/" />
+      <Menu.Item
+        key="1"
+        icon={<HomeOutlined />}
+        style={{ margin: 0, paddingLeft: "28px" }}
+      >
+        <Link to={`/activityFeed/${sessionStorage.getItem("id")}`} />
         Home
       </Menu.Item>
-      <Menu.Item key="2" icon={<UserOutlined />} style={{ margin: 0,paddingLeft: "28px"}}>
-        <Link to={`/ProfilePage/${sessionStorage.getItem('id')}`} />
+      <Menu.Item
+        key="2"
+        icon={<UserOutlined />}
+        style={{ margin: 0, paddingLeft: "28px" }}
+      >
+        <Link to={`/ProfilePage/${sessionStorage.getItem("id")}`} />
         Profile
       </Menu.Item>
-      
+
       <Menu.Item
         key="3"
         icon={<TeamOutlined />}
@@ -81,7 +91,7 @@ const Navbar = () => {
         <Link to={"/connection"} />
         Connections
       </Menu.Item>
-      
+
       <Menu.Item
         key="4"
         icon={<BellOutlined />}
@@ -90,19 +100,37 @@ const Navbar = () => {
         <Link to={"/notification"} />
         Notifications
       </Menu.Item>
-      
-      <Menu.Item key="5" icon={<LogoutOutlined />}
-       style={{ margin: 0,paddingLeft: "28px" }}
-       onClick={() => {
-        // Clear token/session
-        localStorage.removeItem('token'); 
-        window.location.href = "/login";
-      }} >
-        Logout
-      </Menu.Item>
-      <Menu.Item key="5" icon={<MessageOutlined />} style={{ margin: 0,paddingLeft: "28px" }} >
+<Menu.Item key="5" icon={<MessageOutlined />} style={{ margin: 0,paddingLeft: "28px" }} >
         <Link to={"/chat"} />
       </Menu.Item>
+      <Menu.SubMenu
+        key="6"
+        icon={<LogoutOutlined />}
+        title="Account"
+        style={{ margin: 0, paddingLeft: "28px" }}
+      >
+        <Menu.Item
+          key="6-1"
+          icon={<LogoutOutlined />}
+          onClick={() => {
+            // Clear token/session
+            localStorage.removeItem("token");
+            window.location.href = "/login";
+          }}
+        >
+          Logout
+        </Menu.Item>
+        <Menu.Item
+          key="6-2"
+          icon={<KeyOutlined />}
+          onClick={() => {
+            setChangePwdModalOpen(true);
+          }}
+        >
+          Change Password
+        </Menu.Item>
+      </Menu.SubMenu>
+
     </Menu>
   );
 
@@ -154,6 +182,10 @@ const Navbar = () => {
       >
         {menu}
       </Drawer>
+      <ChangePwdModal
+        changePwdModalOpen={changePwdModalOpen}
+        setchangePwdModalOpen={setChangePwdModalOpen}
+      />
     </Header>
   );
 };

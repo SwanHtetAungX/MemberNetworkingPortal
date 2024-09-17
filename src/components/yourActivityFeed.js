@@ -13,6 +13,7 @@ import {
 import { EllipsisOutlined, MessageOutlined } from "@ant-design/icons";
 import LikeBtn from "./likeBtn";
 import CommentModal from "./commentsModal";
+import NewPostCard from "../components/newPostCard";
 
 const { Title, Paragraph } = Typography;
 
@@ -201,6 +202,9 @@ const YourActivity = ({ id, profileData, token }) => {
   return (
     <div>
       <Title level={2}>Your Activity</Title>
+      <Col span={24} style={{ marginBottom: 10 }}>
+        <NewPostCard profileData={profileData} token={token} />
+      </Col>
       <Row gutter={[16, 16]}>
         {activityFeed.map((post) => (
           <Col xs={24} key={post._id}>
