@@ -285,19 +285,19 @@ router.patch("/approve-or-cancel/:id", async (req, res) => {
 
                 // Notify the invitees via email
                 if (event.isPublic && event.invitees && event.invitees.length > 0) {
-                    const emailPromises = event.invitees.map(async (email) => {
+                    const emailPromises = event.invitees.map(async (Email) => {
                         // Send email to each invitee
                         await transporter.sendMail({
                             from: process.env.EMAIL_USER,
-                            to: email,
+                            to: Email,
                             subject: `Invitation to Event: ${event.title}`,
                             text: `You have been invited to the event "${event.title}". Location: ${event.location}, Date: ${new Date(event.date).toDateString()}, Time: ${event.time}.`,
                         });
 
                         // Check if the invitee is a member and send an in-app notification
-                        const inviteeUser = await usersCollection.findOne({ email });
+                        const inviteeUser = await usersCollection.findOne({ Email });
                         if (inviteeUser) {
-                            console.log(`Invitee is a member: ${inviteeUser.email}`);
+                            console.log(`Invitee is a member: ${inviteeUser.Email}`);
 
                             // Inserting notification for the invitee if they are a member
                             await notificationsCollection.insertOne({
@@ -311,7 +311,7 @@ router.patch("/approve-or-cancel/:id", async (req, res) => {
                             const notificationResult = await notificationsCollection.insertOne(notificationData);
 
                             // Log notification storage success
-                            console.log(`Notification stored for invitee: ${inviteeUser.email}, Notification ID: ${notificationResult.insertedId}`);
+                            console.log(`Notification stored for invitee: ${inviteeUser.Email}, Notification ID: ${notificationResult.insertedId}`);
                         }
                     });
 
