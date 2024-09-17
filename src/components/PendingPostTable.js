@@ -1,0 +1,248 @@
+import React, { useEffect, useState } from "react";
+import { Table, Button, message, Popconfirm, Input } from "antd";
+import { SearchOutlined } from "@ant-design/icons";
+
+const PendingPostsTable = () => {
+  const [pendingPosts, setPendingPosts] = useState([]);
+  const [filteredData, setFilteredData] = useState([]);
+  const [searchText, setSearchText] = useState("");
+  const [reason, setReason] = useState("");
+
+  useEffect(() => {
+    const fetchPendingPosts = async () => {
+      try {
+        const response = await fetch("http://localhost:5050/posts/pending");
+        if (!response.ok) {
+          throw new Error("Failed to fetch pending posts");
+        }
+        const data = await response.json();
+        const postsWithMedia = await Promise.all(
+          data.map(async (post) => {
+            if (post.mediaId) {
+              try {
+                const mediaResponse = await fetch(
+                  `http://localhost:5050/posts/media/${post.mediaId}`
+                );
+                if (!mediaResponse.ok) {
+                  throw new Error(
+                    `Error fetching media: ${mediaResponse.statusText}`
+                  );
+                }
+
+                const mediaBlob = await mediaResponse.blob();
+                const mediaType = mediaBlob.type;
+                const mediaUrl = URL.createObjectURL(mediaBlob);
+
+                return { ...post, mediaUrl, mediaType };
+              } catch (error) {
+                console.error("Error fetching media:", error);
+                return post;
+              }
+            }
+            return post;
+          })
+        );
+        setPendingPosts(postsWithMedia);
+        setFilteredData(postsWithMedia);
+      } catch (error) {
+        message.error(error.message);
+      }
+    };
+
+    fetchPendingPosts();
+  }, []);
+
+  useEffect(() => {
+    const filtered = pendingPosts.filter((post) => {
+      return (
+        post.author.toLowerCase().includes(searchText.toLowerCase()) ||
+        post.content.toLowerCase().includes(searchText.toLowerCase())
+      );
+    });
+    setFilteredData(filtered);
+  }, [searchText, pendingPosts]);
+
+  const handleApprove = async (id, authorId, authorEmail) => {
+    try {
+      const response = await fetch(
+        `http://localhost:5050/posts/${id}/approve`,
+        {
+          method: "PATCH",
+          body: JSON.stringify({ authorId, authorEmail }),
+        }
+      );
+      if (!response.ok) {
+        throw new Error("Failed to approve post");
+      }
+      message.success("Post approved.");
+      setPendingPosts(pendingPosts.filter((post) => post._id !== id));
+    } catch (error) {
+      message.error(error.message);
+    }
+  };
+
+  const handleReject = async (id, authorId, authorEmail, reason) => {
+    try {
+      const response = await fetch(`http://localhost:5050/posts/${id}/deny`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          "X-AuthorId": authorId,
+          "X-AuthorEmail": authorEmail,
+          "X-Reason": reason,
+        },
+      });
+      if (!response.ok) {
+        throw new Error("Failed to reject post");
+      }
+      message.success("Post rejected.");
+      setPendingPosts(pendingPosts.filter((post) => post._id !== id));
+    } catch (error) {
+      message.error(error.message);
+    }
+  };
+
+  const columns = [
+    {
+      title: "No.",
+      key: "index",
+      render: (text, record, index) => index + 1,
+      width: 10,
+    },
+    {
+      title: "Author",
+      dataIndex: "author",
+      key: "author",
+      width: 40,
+    },
+
+    {
+      title: "Content",
+      dataIndex: "content",
+      key: "content",
+      width: 150,
+      render: (text) => (
+        <div
+          style={{
+            maxHeight: "50px",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+          }}
+        >
+          {text}
+        </div>
+      ),
+    },
+    {
+      title: "Media",
+      dataIndex: "mediaUrl",
+      key: "mediaUrl",
+      width: 80,
+      render: (_, record) => (
+        <>
+          {record.mediaUrl && record.mediaType.startsWith("image") && (
+            <img
+              alt="media"
+              src={record.mediaUrl}
+              style={{
+                width: "100%",
+                marginTop: 10,
+                borderRadius: 10,
+              }}
+            />
+          )}
+          {record.mediaUrl && record.mediaType.startsWith("video") && (
+            <video
+              controls
+              style={{
+                width: "100%",
+                marginTop: 10,
+                borderRadius: 10,
+              }}
+            >
+              <source src={record.mediaUrl} />
+              Your browser does not support the video tag.
+            </video>
+          )}
+        </>
+      ),
+    },
+    {
+      title: "Actions",
+      key: "actions",
+      width: 20,
+      render: (_, record) => (
+        <div style={{ display: "flex", justifyContent: "space-evenly" }}>
+          <Popconfirm
+            title="Are you sure you want to approve this post?"
+            onConfirm={() =>
+              handleApprove(
+                record._id,
+                record.authorId,
+                record.authorEmail,
+                reason
+              )
+            }
+            okText="Yes"
+            cancelText="No"
+          >
+            <Button type="primary" style={{ marginRight: 8 }}>
+              Approve
+            </Button>
+          </Popconfirm>
+          <Popconfirm
+            title={
+              <>
+                <div>Are you sure you want to reject this post?</div>
+                <Input
+                  placeholder="Reason for rejection"
+                  value={reason}
+                  onChange={(e) => setReason(e.target.value)}
+                  style={{ marginTop: 10 }}
+                />
+              </>
+            }
+            onConfirm={() =>
+              handleReject(
+                record._id,
+                record.authorId,
+                record.authorEmail,
+                reason
+              )
+            }
+            okText="Yes"
+            cancelText="No"
+          >
+            <Button danger>Reject</Button>
+          </Popconfirm>
+        </div>
+      ),
+    },
+  ];
+
+  return (
+    <>
+      <Input
+        placeholder="Search by title or author"
+        value={searchText}
+        onChange={(e) => setSearchText(e.target.value)}
+        style={{ marginBottom: 16, width: "100%" }}
+        prefix={<SearchOutlined />}
+      />
+      <Table
+        columns={columns}
+        dataSource={filteredData}
+        rowKey="_id"
+        pagination={{ pageSize: 10 }}
+        scroll={{ x: 800 }}
+        style={{ margin: "20px", boxShadow: "0px 0px 10px rgba(0,0,0,0.1)" }}
+        bordered
+        rowClassName={(record, index) =>
+          index % 2 === 0 ? "table-row-light" : "table-row-dark"
+        }
+      />
+    </>
+  );
+};
+
+export default PendingPostsTable;

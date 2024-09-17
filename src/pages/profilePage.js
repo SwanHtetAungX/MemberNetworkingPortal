@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import axios from "axios";
 import {
   Layout,
   Avatar,
@@ -18,12 +17,12 @@ import {
   MoreOutlined,
   UserOutlined,
 } from "@ant-design/icons";
-import AddModal from "./addModal";
-import UploadModal from "./uploadModal";
-import RemoveModal from "./removeModal";
-import ConnectBtn from "./connectBtn";
-import ProfilePicModal from "./profilePicModal";
-import YourActivity from "./yourActivityFeed";
+import AddModal from "../components/addModal";
+import UploadModal from "../components/uploadModal";
+import RemoveModal from "../components/removeModal";
+import ConnectBtn from "../components/connectBtn";
+import ProfilePicModal from "../components/profilePicModal";
+import YourActivity from "../components/yourActivityFeed";
 
 const { Content } = Layout;
 const { Title, Paragraph } = Typography;
@@ -40,11 +39,8 @@ const ProfilePage = () => {
 
   const [fileList, setFileList] = useState([]);
   const [uploading, setUploading] = useState(false);
+  const token = localStorage.getItem("authToken");
 
-
-
-
-  
   useEffect(() => {
     const sessionId = sessionStorage.getItem("id");
     if (sessionId === id) {
@@ -94,35 +90,6 @@ const ProfilePage = () => {
       ),
     },
   ];
-
-
-  const handleMessageClick = async () => {
-    const senderId = sessionStorage.getItem("id");
-    
-    try {
-        // Check if a conversation between the sender and receiver already exists
-        const existingConversationRes = await axios.get(`http://localhost:5050/conversation/find/${senderId}/${id}`);
-
-        if (existingConversationRes.data) {
-            // If a conversation exists, navigate to the existing conversation
-            const existingConversationId = existingConversationRes.data._id;
-            window.location.href = `/chat?conversationId=${existingConversationId}`;
-        } else {
-            // If no conversation exists, create a new conversation
-            const res = await axios.post("http://localhost:5050/conversation", {
-                senderId,
-                receiverId: id,
-            });
-
-            // After creating the conversation, navigate to the /chat page with the new conversation ID
-            const newConversationId = res.data.insertedId;
-            window.location.href = `/chat?conversationId=${newConversationId}`;
-        }
-    } catch (err) {
-        console.error("Error creating or finding conversation", err);
-    }
-};
-
 
   return (
     <Layout style={{ backgroundColor: "#f0f2f5", minHeight: "100vh" }}>
@@ -186,7 +153,7 @@ const ProfilePage = () => {
                 <Row gutter={8}>
                   <Col>
                     <Tooltip title="Message">
-                      <Button type="primary" onClick={handleMessageClick}>Message</Button>
+                      <Button type="primary">Message</Button>
                     </Tooltip>
                   </Col>
                   <Col>
@@ -288,7 +255,7 @@ const ProfilePage = () => {
             </Paragraph>
           </Card>
         ))}
-        <YourActivity id={id} profileData={profileData} />
+        <YourActivity id={id} profileData={profileData} token={token} />
       </Content>
 
       <RemoveModal
@@ -297,6 +264,7 @@ const ProfilePage = () => {
         profileData={profileData}
         removeModalOpen={removeModalOpen}
         setRemoveModalOpen={setRemoveModalOpen}
+        token={token}
       />
 
       <UploadModal
@@ -307,6 +275,7 @@ const ProfilePage = () => {
         setUploading={setUploading}
         uploading={uploading}
         setFileList={setFileList}
+        token={token}
       />
 
       <AddModal
@@ -315,11 +284,13 @@ const ProfilePage = () => {
         addModalOpen={addModalOpen}
         setAddModalOpen={setAddModalOpen}
         profileData={profileData}
+        token={token}
       />
       <ProfilePicModal
         id={id}
         setProfilePicModalOpen={setProfilePicModalOpen}
         profilePicModalOpen={profilePicModalOpen}
+        token={token}
       />
     </Layout>
   );

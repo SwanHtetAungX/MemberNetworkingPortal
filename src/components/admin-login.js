@@ -22,7 +22,6 @@ const AdminLogin = () => {
     e.preventDefault();
     setError("");
 
-    // Replace with your API call
     try {
       const response = await fetch("http://localhost:5050/admin/login", {
         method: "POST",

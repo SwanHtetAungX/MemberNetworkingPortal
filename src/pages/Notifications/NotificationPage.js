@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { List, Card, Avatar, Spin, Alert, Typography, Tag, Button, Tooltip, Badge } from 'antd';
-import { NotificationOutlined, CheckOutlined, ExclamationCircleOutlined, SoundOutlined } from '@ant-design/icons';
+import { NotificationOutlined, MailOutlined, CheckOutlined, SoundOutlined } from '@ant-design/icons';
+import EventPage from '../../components/events-page';
 import './notificationPage.css'; 
 
 const { Title, Text } = Typography;
@@ -17,6 +18,7 @@ const NotificationPage = () => {
     const fetchData = async () => {
       setLoading(true);
       try {
+        // Fetch notifications and announcements
         const notificationsResponse = await axios.get(`http://localhost:5050/connection/notifications/${userId}`);
         const announcementsResponse = await axios.get('http://localhost:5050/announcement');
         
@@ -80,6 +82,13 @@ const NotificationPage = () => {
           renderItem={item => (
             <List.Item
               className={`notification-item ${item.acknowledged ? 'acknowledged' : ''}`}
+              style={{
+                padding: '15px 20px',
+                borderRadius: '8px',
+                marginBottom: '10px',
+                backgroundColor: '#fff',
+                boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+              }}
             >
               <Badge.Ribbon text={item.title ? "Announcement" : "Notification"} color={item.title ? "#ff9f43" : "#1890ff"}>
                 <List.Item.Meta
@@ -87,7 +96,7 @@ const NotificationPage = () => {
                     <Avatar
                       size="large"
                       style={{ backgroundColor: item.title ? '#ff9f43' : '#1890ff', marginTop:'5px', marginLeft:'10px' }}
-                      icon={item.title ? <SoundOutlined /> : <NotificationOutlined />}
+                      icon={item.title ? <SoundOutlined /> : (item.type === 'EventInvite' ? <MailOutlined /> : <NotificationOutlined />)}
                     />
                   }
                   title={
@@ -101,7 +110,11 @@ const NotificationPage = () => {
                         )}
                       </Text>
                     ) : (
-                      <Text strong style={{ fontSize: '16px' }}>{`${item.type} from ${item.userName}`}</Text>
+                      <Text strong style={{ fontSize: '16px' }}>
+                        {item.type === 'EventInvite' 
+                          ? `You have been invited to ${item.eventTitle}` 
+                          : `${item.type} for ${item.userName}`}
+                      </Text>
                     )
                   }
                   description={
@@ -131,6 +144,7 @@ const NotificationPage = () => {
           )}
         />
       </Card>
+      <EventPage />
     </div>
   );
 };
