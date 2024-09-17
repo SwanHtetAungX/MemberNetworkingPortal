@@ -1,29 +1,12 @@
 import React, { useState } from "react";
-import {
-  Layout,
-  Menu,
-  Input,
-  Row,
-  Col,
-  Typography,
-  Drawer,
-  Button,
-} from "antd";
-import {
-  HomeOutlined,
-  UserOutlined,
-  TeamOutlined,
-  BellOutlined,
-  SearchOutlined,
-  MenuOutlined,
-  LogoutOutlined,
-  KeyOutlined,
-} from "@ant-design/icons";
-import ChangePwdModal from "../components/changePwdModal";
+
+
+import { Layout, Menu, Input, Row, Col, Typography, Drawer, Button } from "antd";
+import { HomeOutlined, UserOutlined, TeamOutlined, BellOutlined, SearchOutlined, MenuOutlined,LogoutOutlined, MessageOutlined, KeyOutlined } from "@ant-design/icons";
 import { Link } from "react-router-dom";
 import axios from "axios";
 import SearchResults from "./SearchResult";
-
+import ChangePwdModal from "../components/changePwdModal";
 const { Header } = Layout;
 const { Title } = Typography;
 
@@ -117,15 +100,17 @@ const Navbar = () => {
         <Link to={"/notification"} />
         Notifications
       </Menu.Item>
-
+<Menu.Item key="5" icon={<MessageOutlined />} style={{ margin: 0,paddingLeft: "28px" }} >
+        <Link to={"/chat"} />
+      </Menu.Item>
       <Menu.SubMenu
-        key="5"
+        key="6"
         icon={<LogoutOutlined />}
         title="Account"
         style={{ margin: 0, paddingLeft: "28px" }}
       >
         <Menu.Item
-          key="5-1"
+          key="6-1"
           icon={<LogoutOutlined />}
           onClick={() => {
             // Clear token/session
@@ -136,7 +121,7 @@ const Navbar = () => {
           Logout
         </Menu.Item>
         <Menu.Item
-          key="5-2"
+          key="6-2"
           icon={<KeyOutlined />}
           onClick={() => {
             setChangePwdModalOpen(true);
@@ -145,6 +130,7 @@ const Navbar = () => {
           Change Password
         </Menu.Item>
       </Menu.SubMenu>
+
     </Menu>
   );
 
