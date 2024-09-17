@@ -17,8 +17,9 @@ import {
   SearchOutlined,
   MenuOutlined,
   LogoutOutlined,
+  KeyOutlined,
 } from "@ant-design/icons";
-
+import ChangePwdModal from "../components/changePwdModal";
 import { Link } from "react-router-dom";
 import axios from "axios";
 import SearchResults from "./SearchResult";
@@ -32,6 +33,7 @@ const Navbar = () => {
   const [searchResults, setSearchResults] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [showResults, setShowResults] = useState(false); // State to manage the visibility of search results
+  const [changePwdModalOpen, setChangePwdModalOpen] = useState(false);
 
   const handleSearch = async (e) => {
     const query = e.target.value;
@@ -116,18 +118,33 @@ const Navbar = () => {
         Notifications
       </Menu.Item>
 
-      <Menu.Item
+      <Menu.SubMenu
         key="5"
         icon={<LogoutOutlined />}
+        title="Account"
         style={{ margin: 0, paddingLeft: "28px" }}
-        onClick={() => {
-          // Clear token/session
-          localStorage.removeItem("token");
-          window.location.href = "/login";
-        }}
       >
-        Logout
-      </Menu.Item>
+        <Menu.Item
+          key="5-1"
+          icon={<LogoutOutlined />}
+          onClick={() => {
+            // Clear token/session
+            localStorage.removeItem("token");
+            window.location.href = "/login";
+          }}
+        >
+          Logout
+        </Menu.Item>
+        <Menu.Item
+          key="5-2"
+          icon={<KeyOutlined />}
+          onClick={() => {
+            setChangePwdModalOpen(true);
+          }}
+        >
+          Change Password
+        </Menu.Item>
+      </Menu.SubMenu>
     </Menu>
   );
 
@@ -179,6 +196,10 @@ const Navbar = () => {
       >
         {menu}
       </Drawer>
+      <ChangePwdModal
+        changePwdModalOpen={changePwdModalOpen}
+        setchangePwdModalOpen={setChangePwdModalOpen}
+      />
     </Header>
   );
 };

@@ -451,10 +451,9 @@ router.patch("/:id/update", upload.single("ProfilePic"), async (req, res) => {
     const query = { _id: new ObjectId(req.params.id) };
 
     const { field, details } = req.body;
-    console.log(field);
 
     if (field === "Password") {
-      const hashedPassword = await bcrypt.hash(details, 10);
+      const hashedPassword = await bcrypt.hash(details.newPassword, 10);
       const update = {
         $set: {
           [field]: hashedPassword,
