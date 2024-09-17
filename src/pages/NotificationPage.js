@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { List, Card, Avatar, Spin, Alert, Typography } from 'antd';
+import { List, Card, Avatar, Spin, Alert, Typography} from 'antd';
 import { NotificationOutlined, MailOutlined } from '@ant-design/icons';
 import EventPage from '../components/events-page';
 
@@ -76,6 +76,7 @@ const NotificationPage = () => {
                     {item.message}
                   </Typography.Text>
                 }
+
               />
             </List.Item>
           )}

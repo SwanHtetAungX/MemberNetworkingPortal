@@ -57,7 +57,8 @@ router.post("/create", authenticateUser, async (req, res) => {
             createdBy: new ObjectId(req.userId),
             createdAt: new Date(),
             status: isPublic ? "Pending" : "Approved",
-            invitees: invitees || []
+            invitees: invitees || [],
+            //attendees: attendees || []
         };
 
         //- private events don't need approval, they cannot invite
@@ -124,7 +125,7 @@ router.get("/dates", authenticateUser, async (req, res) => {
         let collection = await db.collection("events");
 
         const events = await collection.find({
-            createdBy: new ObjectId(userId)
+                 createdBy: new ObjectId(userId) 
         }).toArray();
 
         // Extract unique dates
@@ -285,13 +286,35 @@ router.patch("/approve-or-cancel/:id", async (req, res) => {
 
                 // Notify the invitees via email
                 if (event.isPublic && event.invitees && event.invitees.length > 0) {
+                    // Fetch the event creator's details
+                    const creator = await usersCollection.findOne({ _id: new ObjectId(event.createdBy) }); //user id 
+                    const creatorName = creator ? `${creator.FirstName} ${creator.LastName}` : "Event Organizer";  // Fallback to "Event Organizer" if name is unavailable
+
                     const emailPromises = event.invitees.map(async (Email) => {
                         // Send email to each invitee
                         await transporter.sendMail({
                             from: process.env.EMAIL_USER,
                             to: Email,
                             subject: `Invitation to Event: ${event.title}`,
-                            text: `You have been invited to the event "${event.title}". Location: ${event.location}, Date: ${new Date(event.date).toDateString()}, Time: ${event.time}.`,
+                            html: `
+                <div style="font-family: Arial, sans-serif; padding: 20px;">
+                    <h2 style="color: #4CAF50;">You’re Invited to ${event.title}</h2>
+                    <p style="font-size: 16px; color: #555;">
+                        Hi there!<br><br>
+                        <strong>${creatorName}</strong> has invited you to the event "<strong>${event.title}</strong>". Below are the event details:
+                    </p>
+                    <p style="font-size: 16px;">
+                        <strong>Location:</strong> ${event.location}<br>
+                        <strong>Date:</strong> ${new Date(event.date).toDateString()}<br>
+                        <strong>Time:</strong> ${event.time}<br>
+                    </p>
+                    <p style="font-size: 16px; color: #555;">
+                        We hope to see you there!<br><br>
+                        Best regards,<br>
+                        The Event Team
+                    </p>
+                </div>
+            `,
                         });
 
                         // Check if the invitee is a member and send an in-app notification
@@ -303,7 +326,7 @@ router.patch("/approve-or-cancel/:id", async (req, res) => {
                             await notificationsCollection.insertOne({
                                 userID: inviteeUser._id.toString(),
                                 type: "EventInvite",
-                                message: `You have been invited to the event "${event.title}".`,
+                                message: `${creatorName} invites you for the event: "${event.title}".`,
                                 eventTitle: event.title,
                                 createdAt: new Date()
                             });
@@ -318,6 +341,7 @@ router.patch("/approve-or-cancel/:id", async (req, res) => {
                     // Wait for all emails to be sent
                     await Promise.all(emailPromises);
                 }
+
 
                 return res.status(200).json({ message: "Event approved, notifications and email invites sent" });
             } else {
@@ -337,6 +361,5 @@ router.patch("/approve-or-cancel/:id", async (req, res) => {
         res.status(500).json({ message: "Internal Server Error" });
     }
 });
-
 
 export default router;

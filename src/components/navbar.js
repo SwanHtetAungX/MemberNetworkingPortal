@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Layout, Menu, Input, Row, Col, Typography, Drawer, Button } from "antd";
-import { HomeOutlined, UserOutlined, TeamOutlined, BellOutlined, SearchOutlined, MenuOutlined } from "@ant-design/icons";
+import { HomeOutlined, UserOutlined, TeamOutlined, BellOutlined, SearchOutlined, MenuOutlined,LogoutOutlined } from "@ant-design/icons";
 import { Link } from "react-router-dom";
 import axios from "axios";
 import SearchResults from "./SearchResult";
@@ -58,15 +58,28 @@ const Navbar = () => {
     >
       <Menu.Item key="1" icon={<HomeOutlined />} style={{ margin: 0,paddingLeft: "28px"}}>
         <Link to="/" />
+        Home
       </Menu.Item>
       <Menu.Item key="2" icon={<UserOutlined />} style={{ margin: 0,paddingLeft: "28px"}}>
         <Link to={`/ProfilePage/${sessionStorage.getItem('id')}`} />
+        Profile
       </Menu.Item>
       <Menu.Item key="3" icon={<TeamOutlined />} style={{ margin: 0,paddingLeft: "28px" }} >
         <Link to={"/connection"} />
+        Connections
       </Menu.Item>
       <Menu.Item key="4" icon={<BellOutlined />} style={{ margin: 0,paddingLeft: "28px" }} >
         <Link to={"/notification"} />
+        Notifications
+      </Menu.Item>
+      <Menu.Item key="5" icon={<LogoutOutlined />}
+       style={{ margin: 0,paddingLeft: "28px" }}
+       onClick={() => {
+        // Clear token/session
+        localStorage.removeItem('token'); 
+        window.location.href = "/login";
+      }} >
+        Logout
       </Menu.Item>
     </Menu>
   );

@@ -61,7 +61,9 @@ const SideNavigationBar = () => {
         </Menu.Item>
 
         <Menu.Item key="logout" icon={<LogoutOutlined />} onClick={handleLogout}>
+        <Link to="/login">
           Logout
+        </Link>
         </Menu.Item>
       </Menu>
     </Sider>
