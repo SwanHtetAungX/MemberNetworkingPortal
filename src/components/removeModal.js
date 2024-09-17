@@ -8,10 +8,22 @@ const RemoveModal = ({
   profileData,
   removeModalOpen,
   setRemoveModalOpen,
+  token,
 }) => {
   const renderList = () => {
     const handleDelete = async (item) => {
       try {
+        const auth = await fetch(`http://localhost:5050/members/authenticate`, {
+          method: "GET",
+          headers: {
+            Authorization: token,
+          },
+        });
+
+        if (auth === false) {
+          message.error("Unauthorized access. Please log in again");
+          return;
+        }
         const response = await fetch(
           `http://localhost:5050/members/${id}/remove`,
           {

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Layout, Menu, Input, Row, Col, Typography, Drawer, Button } from "antd";
 import { HomeOutlined, UserOutlined, TeamOutlined, BellOutlined, SearchOutlined, MenuOutlined,LogoutOutlined } from "@ant-design/icons";
+
 import { Link } from "react-router-dom";
 import axios from "axios";
 import SearchResults from "./SearchResult";
@@ -20,9 +21,12 @@ const Navbar = () => {
     setSearchQuery(query);
     if (query) {
       try {
-        const response = await axios.get(`http://localhost:5050/members/search`, {
-          params: { query },
-        });
+        const response = await axios.get(
+          `http://localhost:5050/members/search`,
+          {
+            params: { query },
+          }
+        );
         setSearchResults(response.data);
         setShowResults(true); // Show results when there is a query
       } catch (error) {
@@ -51,11 +55,16 @@ const Navbar = () => {
   };
 
   const menu = (
-    <Menu 
+    <Menu
       mode={screenSize <= 768 ? "vertical" : "horizontal"}
-      defaultSelectedKeys={['1']}
-      style={{ borderBottom: "none", width: screenSize <= 768 ? '100%' : 'auto', margin: 0 }}
+      defaultSelectedKeys={["2"]}
+      style={{
+        borderBottom: "none",
+        width: screenSize <= 768 ? "100%" : "auto",
+        margin: 0,
+      }}
     >
+
       <Menu.Item key="1" icon={<HomeOutlined />} style={{ margin: 0,paddingLeft: "28px"}}>
         <Link to="/" />
         Home
@@ -64,14 +73,25 @@ const Navbar = () => {
         <Link to={`/ProfilePage/${sessionStorage.getItem('id')}`} />
         Profile
       </Menu.Item>
-      <Menu.Item key="3" icon={<TeamOutlined />} style={{ margin: 0,paddingLeft: "28px" }} >
+      
+      <Menu.Item
+        key="3"
+        icon={<TeamOutlined />}
+        style={{ margin: 0, paddingLeft: "28px" }}
+      >
         <Link to={"/connection"} />
         Connections
       </Menu.Item>
-      <Menu.Item key="4" icon={<BellOutlined />} style={{ margin: 0,paddingLeft: "28px" }} >
+      
+      <Menu.Item
+        key="4"
+        icon={<BellOutlined />}
+        style={{ margin: 0, paddingLeft: "28px" }}
+      >
         <Link to={"/notification"} />
         Notifications
       </Menu.Item>
+      
       <Menu.Item key="5" icon={<LogoutOutlined />}
        style={{ margin: 0,paddingLeft: "28px" }}
        onClick={() => {
@@ -85,14 +105,25 @@ const Navbar = () => {
   );
 
   return (
-    <Header style={{ backgroundColor: "white", padding: "0 20px", lineHeight: '64px', position: 'relative', zIndex: 1000 }}>
+    <Header
+      style={{
+        backgroundColor: "white",
+        padding: "0 20px",
+        lineHeight: "64px",
+        position: "relative",
+        zIndex: 1000,
+      }}
+    >
       <Row justify="space-between" align="middle">
         <Col>
-          <Title level={4} style={{ marginBottom: 0, color: "#1890ff", fontSize: '20px' }}>
+          <Title
+            level={4}
+            style={{ marginBottom: 0, color: "#1890ff", fontSize: "20px" }}
+          >
             Network.com
           </Title>
         </Col>
-        <Col flex="auto" style={{ margin: "0 24px", position: 'relative' }}>
+        <Col flex="auto" style={{ margin: "0 24px", position: "relative" }}>
           <Input
             prefix={<SearchOutlined style={{ color: "rgba(0,0,0,.25)" }} />}
             placeholder="Search..."
@@ -102,10 +133,12 @@ const Navbar = () => {
             onFocus={() => setShowResults(true)} // Show search results on focus
             onPressEnter={handleSearch}
           />
-          {showResults && searchResults.length > 0 && <SearchResults results={searchResults} />}
+          {showResults && searchResults.length > 0 && (
+            <SearchResults results={searchResults} />
+          )}
         </Col>
         {screenSize > 768 ? (
-          <Col style={{flex: 'none'}}>{menu}</Col> 
+          <Col style={{ flex: "none" }}>{menu}</Col>
         ) : (
           <Button type="text" icon={<MenuOutlined />} onClick={showDrawer} />
         )}
