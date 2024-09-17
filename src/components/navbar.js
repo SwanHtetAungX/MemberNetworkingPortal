@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { Layout, Menu, Input, Row, Col, Typography, Drawer, Button } from "antd";
-import { HomeOutlined, UserOutlined, TeamOutlined, BellOutlined, SearchOutlined, MenuOutlined,LogoutOutlined } from "@ant-design/icons";
-
+import { HomeOutlined, UserOutlined, TeamOutlined, BellOutlined, SearchOutlined, MenuOutlined,LogoutOutlined, MessageOutlined } from "@ant-design/icons";
 import { Link } from "react-router-dom";
 import axios from "axios";
 import SearchResults from "./SearchResult";
@@ -100,6 +99,9 @@ const Navbar = () => {
         window.location.href = "/login";
       }} >
         Logout
+      </Menu.Item>
+      <Menu.Item key="5" icon={<MessageOutlined />} style={{ margin: 0,paddingLeft: "28px" }} >
+        <Link to={"/chat"} />
       </Menu.Item>
     </Menu>
   );

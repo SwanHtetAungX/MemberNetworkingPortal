@@ -1,0 +1,175 @@
+.announcement-container {
+    padding: 20px;
+  }
+  
+  .create-announcement-card,
+  .past-announcements-card {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+  }
+  
+  .announcement-card {
+    background: #ffffff;
+    border-radius: 8px;
+    padding: 10px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s, box-shadow 0.3s;
+    border-left: 5px solid;
+  }
+  
+  .announcement-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  }
+  
+ 
+  .announcement-high {
+    border-left-color: #ff4d4f;
+  }
+  
+  .announcement-medium {
+    border-left-color: #fa8c16;
+  }
+  
+  .announcement-low {
+    border-left-color: #52c41a;
+  }
+  
+  .announcement-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .announcement-content {
+    margin-top: 10px;
+    color: #595959;
+  }
+  .delete-button {
+    border-color: #ff4d4f;
+  }
+  
+  .delete-button:hover {
+    background-color: #e03a3a; /* Custom hover color */
+    border-color: #e03a3a;
+  }
+  
+  .actions {
+    text-align: right;
+    margin-top: 10px;
+  }
+  
+  @media (max-width: 768px) {
+    .announcement-container {
+      padding: 10px;
+    }
+  }
+  
+  .announcement-banner {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 1001;
+    background: linear-gradient(90deg, #e0f7fa, #e0f4ff);
+    padding: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    animation: slideIn 0.5s ease;
+  }
+  
+  @keyframes slideIn {
+    from {
+      opacity: 0;
+      transform: translateY(-20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  .announcement-banner .ant-alert {
+    border-radius: 8px;
+    text-align: center;
+    background-color: #ffffff;
+    padding: 16px;
+  }
+  
+  .banner-content h3 {
+    margin: 0;
+    font-size: 18px;
+    color: #1890ff;
+  }
+  
+  .banner-content {
+    text-align: left;
+  }
+  
+  .banner-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .countdown {
+    font-size: 14px;
+    color: #ff4d4f;
+  }
+  
+  .acknowledge-button {
+    background-color: #52c41a;
+    border-color: #52c41a;
+    color: white;
+    transition: background-color 0.3s;
+  }
+  
+  .acknowledge-button:hover {
+    background-color: #389e0d;
+    border-color: #389e0d;
+  }
+  
+  @media (max-width: 768px) {
+    .announcement-banner {
+      padding: 8px;
+    }
+  
+    .banner-footer {
+      flex-direction: column;
+      gap: 8px;
+    }
+  }
+  
+  .acknowledged-users {
+    margin-top: 10px;
+    background: #f9f9f9;
+    padding: 10px;
+    border-radius: 5px;
+  }
+  
+  .acknowledged-users h4 {
+    margin-bottom: 10px;
+    font-size: 16px;
+    color: #595959;
+  }
+  
+  .user-badges {
+    display: flex;
+    flex-wrap: wrap;
+  }
+  
+  .user-badges .ant-avatar {
+    margin-right: 5px;
+    margin-bottom: 5px;
+  }
+  
+  .no-acknowledgements {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    padding: 10px;
+  }
+  
+  .no-acknowledgements p {
+    margin-top: 5px;
+    color: #bfbfbf;
+  }

@@ -3,8 +3,7 @@ import React from 'react';
 import { Layout, Menu } from 'antd';
 import { UserAddOutlined, UserOutlined, ProfileOutlined, LogoutOutlined,  CalendarOutlined, FileImageOutlined, } from '@ant-design/icons';
 import { Link } from 'react-router-dom';
-
-
+import { TfiAnnouncement } from "react-icons/tfi";
 const { Sider } = Layout;
 
 const SideNavigationBar = () => {
@@ -59,7 +58,11 @@ const SideNavigationBar = () => {
             Events
           </Link>
         </Menu.Item>
-
+        <Menu.Item key="announcement" icon={<TfiAnnouncement />}>
+          <Link to="/announcement">
+            Announcement
+          </Link>
+        </Menu.Item>
         <Menu.Item key="logout" icon={<LogoutOutlined />} onClick={handleLogout}>
         <Link to="/login">
 
