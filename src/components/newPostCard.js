@@ -1,5 +1,14 @@
 import React, { useState, useEffect } from "react";
-import { Card, Avatar, Form, Input, Button, Upload, message } from "antd";
+import {
+  Card,
+  Avatar,
+  Form,
+  Input,
+  Button,
+  Upload,
+  message,
+  Checkbox,
+} from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 
 const NewPostCard = ({ profileData, token }) => {
@@ -25,17 +34,19 @@ const NewPostCard = ({ profileData, token }) => {
         message.error("Unauthorized access. Please log in again");
         return;
       }
+
       const values = await form.validateFields();
       console.log("Content:", values.content);
       console.log("File:", file);
+      console.log("Allow Comments:", values.allowComments);
 
       const formData = new FormData();
       formData.append("content", values.content);
+      formData.append("allowComments", values.allowComments.toString()); // Converting to string
+
       if (file) {
         formData.append("media", file);
       }
-
-      console.log("Form Data:", formData);
 
       const response = await fetch(
         `http://localhost:5050/posts/${profileData._id}`,
@@ -101,7 +112,11 @@ const NewPostCard = ({ profileData, token }) => {
         </Button>,
       ]}
     >
-      <Form form={form} layout="vertical">
+      <Form
+        form={form}
+        layout="vertical"
+        initialValues={{ allowComments: true }}
+      >
         <Form.Item name="content" label="What's on your mind?">
           <Input.TextArea onChange={handleContentChange} />
         </Form.Item>
@@ -115,6 +130,10 @@ const NewPostCard = ({ profileData, token }) => {
         >
           <Button icon={<UploadOutlined />}>Click to Upload</Button>
         </Upload>
+
+        <Form.Item name="allowComments" valuePropName="checked">
+          <Checkbox>Allow comments</Checkbox>
+        </Form.Item>
       </Form>
     </Card>
   );

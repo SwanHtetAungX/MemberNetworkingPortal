@@ -266,11 +266,13 @@ const YourActivity = ({ id, profileData, token }) => {
                 postId={post._id}
                 token={token}
               />
-              <Button
-                type="text"
-                icon={<MessageOutlined />}
-                onClick={() => handleOpenComments(post.comments, post._id)}
-              />
+              {post.allowComments !== false && (
+                <Button
+                  type="text"
+                  icon={<MessageOutlined />}
+                  onClick={() => handleOpenComments(post.comments, post._id)}
+                />
+              )}
               <Row>
                 <Paragraph>
                   <strong>{profileData.FirstName}</strong> {post.content}

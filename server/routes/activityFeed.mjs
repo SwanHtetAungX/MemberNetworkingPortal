@@ -267,6 +267,7 @@ router.post("/:authorId", upload.single("media"), async (req, res) => {
     timestamp: new Date().toISOString(),
     likes: [],
     comments: [],
+    allowComments: req.body.allowComments === "true",
   };
 
   try {
