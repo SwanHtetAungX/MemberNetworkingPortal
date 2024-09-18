@@ -96,7 +96,12 @@ const EventPage = () => {
     // Handle Edit Event
     const handleEditEvent = async (values) => {
         try {
+            if (currentEvent && currentEvent.isPublic) {
+                delete values.isPublic; // Remove isPublic if event is public
+            }
+
             const token = localStorage.getItem('authToken');
+            
             await fetch(`http://localhost:5050/event/update/${currentEvent._id}`, {
                 method: 'PATCH',
                 headers: {
@@ -139,7 +144,13 @@ const EventPage = () => {
     // Open the Edit Event modal with the selected event
     const openEditModal = (event) => {
         setCurrentEvent(event);
-        form.setFieldsValue(event);  // Populate form with event data for editing
+        form.setFieldsValue({
+            title: event.title || '',
+            location: event.location || '',
+            time: event.time || '',
+            description: event.description || '',
+            isPublic: event.isPublic || false,
+        });  
         setEditModalVisible(true);
     };
 
@@ -240,6 +251,7 @@ const EventPage = () => {
                     form={form}
                     layout="vertical"
                     onFinish={handleEditEvent}  // Calls handleEditEvent on form submission
+                    
                 >
                     <Form.Item
                         name="title"
@@ -266,13 +278,14 @@ const EventPage = () => {
                     >
                         <Input.TextArea />
                     </Form.Item>
-                    <Form.Item
+                    {/* <Form.Item
                         name="isPublic"
                         valuePropName="checked"
                         label="Public Event"
+                        
                     >
-                        <Checkbox />
-                    </Form.Item>
+                        <Checkbox disabled={!currentEvent?.isPublic}/>
+                    </Form.Item> */}
                     <Form.Item>
                         <Button type="primary" htmlType="submit">
                             Update Event
