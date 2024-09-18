@@ -32,6 +32,7 @@ import Chat from "./pages/Chat/Chat";
 import Announcement from "./components/Announcements/Announcements";
 import AnnouncementBanner from "./components/Announcements/AnnouncementBanner";
 import io from "socket.io-client";
+import RSVPConfirmation from "./components/RSVPConfirmation";
 const { Content } = Layout;
 
 const socket = io("http://localhost:8900");
@@ -95,6 +96,7 @@ const AppLayout = () => {
                 path="/announcement"
                 element={<Announcement refreshFlag={refreshAnnouncements} />}
               />
+              <Route path="/rsvp-confirmation" element={<RSVPConfirmation />} />
             </Routes>
           </Content>
           <Footer />
