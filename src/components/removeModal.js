@@ -6,6 +6,7 @@ const RemoveModal = ({
   id,
   modalContext,
   profileData,
+  setProfileData,
   removeModalOpen,
   setRemoveModalOpen,
   token,
@@ -39,8 +40,12 @@ const RemoveModal = ({
         );
 
         if (response.ok) {
+          const updatedData = await response.json();
           message.success("Item deleted successfully");
-          window.location.reload();
+          setProfileData((prevData) => ({
+            ...prevData,
+            ...updatedData,
+          }));
         } else {
           console.log(response);
           throw new Error("Failed to delete item");
