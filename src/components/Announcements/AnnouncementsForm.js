@@ -52,8 +52,11 @@ const AnnouncementForm = ({ refreshFlag}) => {
 
     try {
       const userResponses = await Promise.all(
+        
         Array.from(userIds).map((userId) =>
+          
           axios.get(`http://localhost:5050/members/${userId}`)
+          
         )
       );
 

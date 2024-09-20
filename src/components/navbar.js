@@ -1,12 +1,33 @@
 import React, { useState } from "react";
-
-
-import { Layout, Menu, Input, Row, Col, Typography, Drawer, Button } from "antd";
-import { HomeOutlined, UserOutlined, TeamOutlined, BellOutlined, SearchOutlined, MenuOutlined,LogoutOutlined, MessageOutlined, KeyOutlined } from "@ant-design/icons";
+import {
+  Layout,
+  Menu,
+  Input,
+  Row,
+  Col,
+  Typography,
+  Drawer,
+  Button,
+  Modal
+} from "antd";
+import {
+  HomeOutlined,
+  UserOutlined,
+  TeamOutlined,
+  BellOutlined,
+  SearchOutlined,
+  MenuOutlined,
+  LogoutOutlined,
+  MessageOutlined,
+  KeyOutlined,
+  FilterOutlined
+} from "@ant-design/icons";
 import { Link } from "react-router-dom";
 import axios from "axios";
 import SearchResults from "./SearchResult";
+import AdvancedSearch from "./AdvancedSearch";
 import ChangePwdModal from "../components/changePwdModal";
+
 const { Header } = Layout;
 const { Title } = Typography;
 
@@ -14,38 +35,43 @@ const Navbar = () => {
   const [visible, setVisible] = useState(false);
   const [screenSize, setScreenSize] = useState(window.innerWidth);
   const [searchResults, setSearchResults] = useState([]);
+  const [showResults, setShowResults] = useState(false);
+  const [isAdvancedSearchVisible, setIsAdvancedSearchVisible] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [showResults, setShowResults] = useState(false); // State to manage the visibility of search results
   const [changePwdModalOpen, setChangePwdModalOpen] = useState(false);
 
-  const handleSearch = async (e) => {
+  const handleSimpleSearch = async (e) => {
     const query = e.target.value;
     setSearchQuery(query);
     if (query) {
       try {
         const response = await axios.get(
           `http://localhost:5050/members/search`,
-          {
-            params: { query },
-          }
+          { params: { query } }
         );
         setSearchResults(response.data);
-        setShowResults(true); // Show results when there is a query
+        setShowResults(true);
       } catch (error) {
         console.error("Error fetching search results:", error);
       }
     } else {
       setSearchResults([]);
-      setShowResults(false); // Hide results if the query is cleared
+      setShowResults(false);
     }
   };
 
-  const handleBlur = () => {
-    // Delay hiding to allow click on the result
-    setTimeout(() => {
-      setShowResults(false);
-      setSearchQuery(""); // Clear the search text after unfocus
-    }, 200);
+  const handleAdvancedSearch = async (values) => {
+    try {
+      const response = await axios.get(
+        `http://localhost:5050/members/search`,
+        { params: values }
+      );
+      setSearchResults(response.data);
+      setShowResults(true);
+      setIsAdvancedSearchVisible(false);
+    } catch (error) {
+      console.error("Error fetching search results:", error);
+    }
   };
 
   const showDrawer = () => {
@@ -54,6 +80,17 @@ const Navbar = () => {
 
   const onClose = () => {
     setVisible(false);
+  };
+
+  const toggleAdvancedSearch = () => {
+    setIsAdvancedSearchVisible(!isAdvancedSearchVisible);
+  };
+
+  const handleBlur = () => {
+    setTimeout(() => {
+      setShowResults(false);
+      setSearchQuery("");
+    }, 200);
   };
 
   const menu = (
@@ -82,7 +119,6 @@ const Navbar = () => {
         <Link to={`/ProfilePage/${sessionStorage.getItem("id")}`} />
         Profile
       </Menu.Item>
-
       <Menu.Item
         key="3"
         icon={<TeamOutlined />}
@@ -91,7 +127,6 @@ const Navbar = () => {
         <Link to={"/connection"} />
         Connections
       </Menu.Item>
-
       <Menu.Item
         key="4"
         icon={<BellOutlined />}
@@ -100,7 +135,11 @@ const Navbar = () => {
         <Link to={"/notification"} />
         Notifications
       </Menu.Item>
-<Menu.Item key="5" icon={<MessageOutlined />} style={{ margin: 0,paddingLeft: "28px" }} >
+      <Menu.Item
+        key="5"
+        icon={<MessageOutlined />}
+        style={{ margin: 0, paddingLeft: "28px" }}
+      >
         <Link to={"/chat"} />
       </Menu.Item>
       <Menu.SubMenu
@@ -113,7 +152,6 @@ const Navbar = () => {
           key="6-1"
           icon={<LogoutOutlined />}
           onClick={() => {
-            // Clear token/session
             localStorage.removeItem("token");
             window.location.href = "/login";
           }}
@@ -123,14 +161,11 @@ const Navbar = () => {
         <Menu.Item
           key="6-2"
           icon={<KeyOutlined />}
-          onClick={() => {
-            setChangePwdModalOpen(true);
-          }}
+          onClick={() => setChangePwdModalOpen(true)}
         >
           Change Password
         </Menu.Item>
       </Menu.SubMenu>
-
     </Menu>
   );
 
@@ -146,10 +181,7 @@ const Navbar = () => {
     >
       <Row justify="space-between" align="middle">
         <Col>
-          <Title
-            level={4}
-            style={{ marginBottom: 0, color: "#1890ff", fontSize: "20px" }}
-          >
+          <Title level={4} style={{ marginBottom: 0, color: "#1890ff", fontSize: "20px" }}>
             Network.com
           </Title>
         </Col>
@@ -158,14 +190,16 @@ const Navbar = () => {
             prefix={<SearchOutlined style={{ color: "rgba(0,0,0,.25)" }} />}
             placeholder="Search..."
             value={searchQuery}
-            onChange={handleSearch}
-            onBlur={handleBlur} // Hide search results and clear text on blur
-            onFocus={() => setShowResults(true)} // Show search results on focus
-            onPressEnter={handleSearch}
+            onChange={handleSimpleSearch}
+            onBlur={handleBlur}
+            onFocus={() => setShowResults(true)}
+            style={{ width: 'calc(100% - 40px)' }}
           />
-          {showResults && searchResults.length > 0 && (
-            <SearchResults results={searchResults} />
-          )}
+          <Button 
+            icon={<FilterOutlined />} 
+            onClick={toggleAdvancedSearch}
+            style={{ marginLeft: '8px' }}
+          />
         </Col>
         {screenSize > 768 ? (
           <Col style={{ flex: "none" }}>{menu}</Col>
@@ -182,10 +216,21 @@ const Navbar = () => {
       >
         {menu}
       </Drawer>
+      <Modal
+        title="Advanced Search"
+        visible={isAdvancedSearchVisible}
+        onCancel={toggleAdvancedSearch}
+        footer={null}
+      >
+        <AdvancedSearch onSearch={handleAdvancedSearch} />
+      </Modal>
       <ChangePwdModal
         changePwdModalOpen={changePwdModalOpen}
-        setchangePwdModalOpen={setChangePwdModalOpen}
+        setChangePwdModalOpen={setChangePwdModalOpen}
       />
+      {showResults && searchResults.length > 0 && (
+        <SearchResults results={searchResults} />
+      )}
     </Header>
   );
 };

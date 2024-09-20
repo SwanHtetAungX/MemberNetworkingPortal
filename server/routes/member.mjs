@@ -49,24 +49,110 @@ const sendEmail = async (email, subject, text) => {
   }
 };
 
+function toObjectId(id) {
+  if (!ObjectId.isValid(id)) {
+    throw new Error("Invalid ID format");
+  }
+  return new ObjectId(id);
+}
+
+
+
+router.post('/bulk', async (req, res) => {
+  const members = req.body;
+
+  try {
+    const collection = db.collection('members');
+
+    for (const member of members) {
+      member.Password = await bcrypt.hash(member.Password, 10);
+
+      member.ProfilePic = ""; 
+      member.JobTitle = ""; 
+      member.Department = ""; 
+      member.Location = ""; 
+      member.Bio = ""; 
+      member.Contact = ""; 
+      member.Skills = []; 
+      member.Positions = []; 
+      member.Education = []; 
+      member.Certifications = []; 
+      member.Projects = []; 
+      member.linkedInData = null; 
+      member.status = "Approved"; 
+    }
+
+    
+    await collection.insertMany(members);
+    
+    
+    for (const member of members) {
+      await sendEmail(member.Email, 'Welcome to the platform!', 'Your account has been created.');
+    }
+
+    res.status(200).json({ message: 'Members added successfully' });
+  } catch (error) {
+    console.error('Error adding members:', error);
+    res.status(500).json({ message: 'Failed to add members in bulk.' });
+  }
+});
+
+
+
 router.get("/search", async (req, res) => {
   try {
-    const { query } = req.query;
-    if (!query) {
-      return res.status(400).send("Search query is required");
+    const { query, name, jobTitle, department, location, skills } = req.query;
+    
+    
+
+    let searchQuery = { status: "Approved" };
+
+    if (query) {
+      // Simple search
+      searchQuery.$or = [
+        { FirstName: { $regex: query, $options: "i" } },
+        { LastName: { $regex: query, $options: "i" } },
+        { JobTitle: { $regex: query, $options: "i" } },
+        { Department: { $regex: query, $options: "i" } },
+        { Location: { $regex: query, $options: "i" } },
+        { "Skills.Name": { $regex: query, $options: "i" } },
+      ];
+    } else {
+      // Advanced search
+      if (name) {
+        searchQuery.$or = [
+          { FirstName: { $regex: name, $options: "i" } },
+          { LastName: { $regex: name, $options: "i" } },
+        ];
+      }
+
+      if (jobTitle) {
+        searchQuery.JobTitle = { $regex: jobTitle, $options: "i" };
+      }
+
+      if (department) {
+        searchQuery.Department = { $regex: department, $options: "i" };
+      }
+
+      if (location) {
+        searchQuery.Location = { $regex: location, $options: "i" };
+      }
+
+      if (skills) {
+        const skillsArray = Array.isArray(skills) ? skills : [skills];
+        searchQuery["Skills.Name"] = { $in: skillsArray.map(skill => new RegExp(skill, 'i')) };
+      }
     }
+
+    
 
     let collection = await db.collection("members");
     let results = await collection
-      .find({
-        status: "Approved", // Only search approved members
-        $or: [
-          { FirstName: { $regex: query, $options: "i" } },
-          { LastName: { $regex: query, $options: "i" } },
-        ],
-      })
-      .project({ FirstName: 1, LastName: 1, ProfilePic: 1 })
+      .find(searchQuery)
+      .project({ FirstName: 1, LastName: 1, ProfilePic: 1, JobTitle: 1, Department: 1, Location: 1, Skills: 1 })
       .toArray();
+
+   
 
     res.status(200).send(results);
   } catch (error) {

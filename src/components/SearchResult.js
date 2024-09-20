@@ -8,7 +8,7 @@ const SearchResults = ({ results }) => {
 
   const handleRedirect = (id) => {
     navigate(`/ProfilePage/${id}`, { replace: true });
-    window.location.reload(); // Force a full refresh
+    window.location.reload(); 
   };
 
   return (
