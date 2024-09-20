@@ -41,10 +41,12 @@ router.post("/create", authenticateUser, async (req, res) => {
     try {
         const { title, date, location, time, description, isPublic, invitees } = req.body;
 
+        const attendees = [];
+        const nonMemberAttendees = [];
+
         if (!title || !date || !location) {
             return res.status(400).send("Title, date, and location are required");
         }
-
         let collection = await db.collection("events");
 
         let newEvent = {
@@ -58,7 +60,8 @@ router.post("/create", authenticateUser, async (req, res) => {
             createdAt: new Date(),
             status: isPublic ? "Pending" : "Approved",
             invitees: invitees || [],
-            //attendees: attendees || []
+            attendees: attendees || [],
+            nonMemberAttendees: nonMemberAttendees || [],
         };
 
         //- private events don't need approval, they cannot invite
@@ -125,7 +128,7 @@ router.get("/dates", authenticateUser, async (req, res) => {
         let collection = await db.collection("events");
 
         const events = await collection.find({
-                 createdBy: new ObjectId(userId) 
+            createdBy: new ObjectId(userId)
         }).toArray();
 
         // Extract unique dates
@@ -142,7 +145,7 @@ router.get("/dates", authenticateUser, async (req, res) => {
 });
 
 
-//Editing an Event by user (PATCH)
+// Editing an Private Event by user (PATCH)
 router.patch("/update/:id", authenticateUser, async (req, res) => {
     try {
         const { id } = req.params;
@@ -151,7 +154,18 @@ router.patch("/update/:id", authenticateUser, async (req, res) => {
 
         let collection = await db.collection("events");
 
-        // update object
+        // Find the event to ensure it exists and is private
+        const event = await collection.findOne({ _id: new ObjectId(id), createdBy: new ObjectId(userId) });
+
+        if (!event) {
+            return res.status(404).send("Event not found or not authorized to update");
+        }
+
+        if (event.isPublic) {
+            return res.status(403).send("Public events cannot be updated");
+        }
+
+        // Prepare update data
         let updateData = {};
         if (title) updateData.title = title;
         if (date) updateData.date = new Date(date);
@@ -160,7 +174,7 @@ router.patch("/update/:id", authenticateUser, async (req, res) => {
         if (description) updateData.description = description;
         if (typeof isPublic !== 'undefined') updateData.isPublic = isPublic;
 
-        //checking if event and user are valid
+        // Update the event
         const result = await collection.updateOne(
             { _id: new ObjectId(id), createdBy: new ObjectId(userId) },
             { $set: updateData }
@@ -176,6 +190,7 @@ router.patch("/update/:id", authenticateUser, async (req, res) => {
         res.status(500).send("Internal Server Error");
     }
 });
+
 
 //Deleting an Event by user(DELETE)
 router.delete("/delete/:id", authenticateUser, async (req, res) => {
@@ -290,35 +305,49 @@ router.patch("/approve-or-cancel/:id", async (req, res) => {
                     const creator = await usersCollection.findOne({ _id: new ObjectId(event.createdBy) }); //user id 
                     const creatorName = creator ? `${creator.FirstName} ${creator.LastName}` : "Event Organizer";  // Fallback to "Event Organizer" if name is unavailable
 
-                    const emailPromises = event.invitees.map(async (Email) => {
+                    const emailPromises = event.invitees.map(async (inviteeEmail) => {
+                       // Create a JWT token for the invitee's RSVP and decline links
+                       const inviteToken = jwt.sign(
+                        { email: inviteeEmail, eventId: event._id },
+                        JWT_SECRET,
+                        { expiresIn: '7d' }  // Token valid for 7 days
+                    );
+
+                    // RSVP and Decline URLs
+                    const rsvpLink = `http://localhost:5050/event/rsvp?token=${inviteToken}`;
+                    const declineLink = `http://localhost:5050/event/decline?token=${inviteToken}`;
+
+                       
+                       
                         // Send email to each invitee
                         await transporter.sendMail({
                             from: process.env.EMAIL_USER,
-                            to: Email,
+                            to: inviteeEmail,
                             subject: `Invitation to Event: ${event.title}`,
                             html: `
-                <div style="font-family: Arial, sans-serif; padding: 20px;">
-                    <h2 style="color: #4CAF50;">You’re Invited to ${event.title}</h2>
-                    <p style="font-size: 16px; color: #555;">
-                        Hi there!<br><br>
-                        <strong>${creatorName}</strong> has invited you to the event "<strong>${event.title}</strong>". Below are the event details:
-                    </p>
-                    <p style="font-size: 16px;">
-                        <strong>Location:</strong> ${event.location}<br>
-                        <strong>Date:</strong> ${new Date(event.date).toDateString()}<br>
-                        <strong>Time:</strong> ${event.time}<br>
-                    </p>
-                    <p style="font-size: 16px; color: #555;">
-                        We hope to see you there!<br><br>
-                        Best regards,<br>
-                        The Event Team
-                    </p>
-                </div>
-            `,
+<div style="font-family: Arial, sans-serif; padding: 20px;">
+    <h2 style="color: #4CAF50;">You’re Invited to ${event.title}</h2>
+    <p style="font-size: 16px; color: #555;">
+        Hi there!<br><br>
+        <strong>${creatorName}</strong> has invited you to the event "<strong>${event.title}</strong>". Below are the event details:
+    </p>
+    <p style="font-size: 16px;">
+        <strong>Location:</strong> ${event.location}<br>
+        <strong>Date:</strong> ${new Date(event.date).toDateString()}<br>
+        <strong>Time:</strong> ${event.time}<br>
+    </p>
+    <p style="font-size: 16px;">
+        <a href="${rsvpLink}" style="background-color: #4CAF50; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">RSVP</a>
+        &nbsp;&nbsp;&nbsp;
+        <a href="${declineLink}" style="background-color: #f44336; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Decline</a>
+    </p>
+</div>
+`
+                            ,
                         });
 
                         // Check if the invitee is a member and send an in-app notification
-                        const inviteeUser = await usersCollection.findOne({ Email });
+                        const inviteeUser = await usersCollection.findOne({ Email : inviteeEmail });
                         if (inviteeUser) {
                             console.log(`Invitee is a member: ${inviteeUser.Email}`);
 
@@ -359,6 +388,86 @@ router.patch("/approve-or-cancel/:id", async (req, res) => {
     } catch (error) {
         console.error("Failed to approve or cancel event", error);
         res.status(500).json({ message: "Internal Server Error" });
+    }
+});
+
+router.get("/rsvp", async (req, res) => {
+    try {
+        const { token } = req.query;
+        const decoded = jwt.verify(token, JWT_SECRET);
+        const { email, eventId } = decoded;
+
+        const eventCollection = await db.collection("events");
+        const memberCollection = await db.collection("members");
+
+        // Find the event
+        const event = await eventCollection.findOne({ _id: new ObjectId(eventId) });
+        if (!event) return res.status(404).send("Event not found");
+
+        // Check if the email is in the members collection
+        const member = await memberCollection.findOne({ Email: email });
+
+        if (member) {
+            // If email is a member, add to 'attendees' if not already present
+            if (!event.attendees.includes(email)) {
+                await eventCollection.updateOne(
+                    { _id: new ObjectId(eventId) },
+                    { $addToSet: { attendees: email } }  // Add to attendees for members
+                );
+            }
+        } else {
+            // If email is not a member, add to 'nonMemberAttendees'
+            if (!event.nonMemberAttendees.includes(email)) {
+                await eventCollection.updateOne(
+                    { _id: new ObjectId(eventId) },
+                    { $addToSet: { nonMemberAttendees: email } }  // Add to nonMemberAttendees for non-members
+                );
+            }
+        }
+
+        return res.redirect(`http://localhost:3000/rsvp-confirmation?status=success&event=${event.title}`);
+        res.status(200).send("You have successfully RSVP'd to the event");
+    } catch (error) {
+        console.error("Error processing RSVP:", error);
+        res.status(500).send("Internal Server Error");
+    }
+});
+
+router.get("/decline", async (req, res) => {
+    try {
+        const { token } = req.query;
+        const decoded = jwt.verify(token, JWT_SECRET);
+        const { email, eventId } = decoded;
+
+        const eventCollection = await db.collection("events");
+        const memberCollection = await db.collection("members");
+
+        // Find the event
+        const event = await eventCollection.findOne({ _id: new ObjectId(eventId) });
+        if (!event) return res.status(404).send("Event not found");
+
+        // Check if the email is in the members collection
+        const member = await memberCollection.findOne({ Email: email });
+
+        if (member) {
+            // If email is a member, remove from 'attendees' if present
+            await eventCollection.updateOne(
+                { _id: new ObjectId(eventId) },
+                { $pull: { attendees: email } }  // Remove from attendees for members
+            );
+        } else {
+            // If email is not a member, remove from 'nonMemberAttendees'
+            await eventCollection.updateOne(
+                { _id: new ObjectId(eventId) },
+                { $pull: { nonMemberAttendees: email } }  // Remove from nonMemberAttendees for non-members
+            );
+        }
+
+        return res.redirect(`http://localhost:3000/rsvp-confirmation?status=declined&event=${event.title}`);
+        res.status(200).send("You have declined the event invite");
+    } catch (error) {
+        console.error("Error processing Decline:", error);
+        res.status(500).send("Internal Server Error");
     }
 });
 

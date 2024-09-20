@@ -6,6 +6,7 @@ const AddModal = ({
   addModalOpen,
   setAddModalOpen,
   profileData,
+  setProfileData,
   token,
 }) => {
   const [form] = useForm();
@@ -46,11 +47,14 @@ const AddModal = ({
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
 
-      await response.json();
+      const updatedData = await response.json();
       message.success("Data added successfully.");
       setAddModalOpen(false);
       form.resetFields();
-      window.location.reload();
+      setProfileData((prevData) => ({
+        ...prevData,
+        ...updatedData,
+      }));
     } catch (error) {
       console.log("Failed to add data:", error);
       message.error("Failed to update data. Please try again.");

@@ -1,10 +1,32 @@
 import React, { useState } from "react";
-import { Layout, Menu, Row, Col, Typography, Drawer, Button, Input, Modal } from "antd";
-import { HomeOutlined, UserOutlined, TeamOutlined, BellOutlined, SearchOutlined, MenuOutlined,LogoutOutlined, MessageOutlined, KeyOutlined, FilterOutlined } from "@ant-design/icons";
+import {
+  Layout,
+  Menu,
+  Input,
+  Row,
+  Col,
+  Typography,
+  Drawer,
+  Button,
+  Modal
+} from "antd";
+import {
+  HomeOutlined,
+  UserOutlined,
+  TeamOutlined,
+  BellOutlined,
+  SearchOutlined,
+  MenuOutlined,
+  LogoutOutlined,
+  MessageOutlined,
+  KeyOutlined,
+  FilterOutlined
+} from "@ant-design/icons";
 import { Link } from "react-router-dom";
 import axios from "axios";
 import SearchResults from "./SearchResult";
 import AdvancedSearch from "./AdvancedSearch";
+import ChangePwdModal from "../components/changePwdModal";
 
 const { Header } = Layout;
 const { Title } = Typography;
@@ -16,6 +38,7 @@ const Navbar = () => {
   const [showResults, setShowResults] = useState(false);
   const [isAdvancedSearchVisible, setIsAdvancedSearchVisible] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [changePwdModalOpen, setChangePwdModalOpen] = useState(false);
 
   const handleSimpleSearch = async (e) => {
     const query = e.target.value;
@@ -96,7 +119,6 @@ const Navbar = () => {
         <Link to={`/ProfilePage/${sessionStorage.getItem("id")}`} />
         Profile
       </Menu.Item>
-
       <Menu.Item
         key="3"
         icon={<TeamOutlined />}
@@ -105,7 +127,6 @@ const Navbar = () => {
         <Link to={"/connection"} />
         Connections
       </Menu.Item>
-
       <Menu.Item
         key="4"
         icon={<BellOutlined />}
@@ -114,7 +135,11 @@ const Navbar = () => {
         <Link to={"/notification"} />
         Notifications
       </Menu.Item>
-<Menu.Item key="5" icon={<MessageOutlined />} style={{ margin: 0,paddingLeft: "28px" }} >
+      <Menu.Item
+        key="5"
+        icon={<MessageOutlined />}
+        style={{ margin: 0, paddingLeft: "28px" }}
+      >
         <Link to={"/chat"} />
       </Menu.Item>
       <Menu.SubMenu
@@ -127,7 +152,6 @@ const Navbar = () => {
           key="6-1"
           icon={<LogoutOutlined />}
           onClick={() => {
-            // Clear token/session
             localStorage.removeItem("token");
             window.location.href = "/login";
           }}
@@ -137,13 +161,11 @@ const Navbar = () => {
         <Menu.Item
           key="6-2"
           icon={<KeyOutlined />}
-          onClick={() => {
-            //setChangePwdModalOpen(true);
-          }}
+          onClick={() => setChangePwdModalOpen(true)}
         >
           Change Password
         </Menu.Item>
-        </Menu.SubMenu>
+      </Menu.SubMenu>
     </Menu>
   );
 
@@ -202,6 +224,10 @@ const Navbar = () => {
       >
         <AdvancedSearch onSearch={handleAdvancedSearch} />
       </Modal>
+      <ChangePwdModal
+        changePwdModalOpen={changePwdModalOpen}
+        setChangePwdModalOpen={setChangePwdModalOpen}
+      />
       {showResults && searchResults.length > 0 && (
         <SearchResults results={searchResults} />
       )}

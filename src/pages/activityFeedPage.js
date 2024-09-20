@@ -273,14 +273,16 @@ const ActivityFeedPage = () => {
                   postId={post._id}
                   token={token}
                 />
-                <Button
-                  type="text"
-                  icon={<MessageOutlined />}
-                  onClick={() => handleOpenComments(post.comments, post._id)}
-                />
+                {post.allowComments !== false && (
+                  <Button
+                    type="text"
+                    icon={<MessageOutlined />}
+                    onClick={() => handleOpenComments(post.comments, post._id)}
+                  />
+                )}
                 <Row>
                   <Paragraph>
-                    <strong>{profileData.FirstName}</strong> {post.content}
+                    <strong>{post.FirstName}</strong> {post.content}
                   </Paragraph>
                 </Row>
                 {post.comments.slice(0, 3).map((comment) => (

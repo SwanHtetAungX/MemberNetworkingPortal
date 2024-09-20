@@ -22,13 +22,18 @@ const EventCardList = ({ selectedDate, events, onEditEvent, onDeleteEvent, onCre
         dataSource={events}
         renderItem={event => (
           <List.Item
+            style={{
+              backgroundColor: event.isPublic ? '#F8ECFF' : 'inherit', 
+              marginBottom: '10px' 
+            }}
             actions={[
               /* Edit Button with Edit icon */
               <Button
                 key="edit"
                 type="link"
                 icon={<EditOutlined />}
-                onClick={() => onEditEvent(event)}>
+                onClick={() => onEditEvent(event)}
+                disabled={event.isPublic}>
               </Button>,
 
               /* Delete Button with Delete icon */
@@ -45,13 +50,24 @@ const EventCardList = ({ selectedDate, events, onEditEvent, onDeleteEvent, onCre
               // Apply conditional styling based on status
               title={
                 <span>
-                    {event.title}{' '}
-                    {event.status === 'Pending' && (
-                        <Text type="danger"> (Pending Approval)</Text>
-                    )}
+                  {event.title}{' '}
+                  {event.isPublic && (
+                    <strong> (Public Event)</strong>
+                  )}
+                  {event.status === 'Pending' && (
+                    <Text type="danger"> (Pending Approval)</Text>
+                  )}
                 </span>
-            }
-            description={`${event.date} - ${event.location}`}
+              }
+              description={ <div>
+                  <div>Time: {event.time}</div>
+                  <div>Location: {event.location}</div>
+                  <div>{event.description}</div>
+                  {event.isPublic && (
+                    <div>
+ <strong>Attendees:</strong> {((event.attendees || []).concat(event.nonMemberAttendees || [])).length > 0 ? (event.attendees || []).concat(event.nonMemberAttendees || []).join(', ') : 'No attendees yet'}                    </div>
+                  )}
+                  </div> }
             />
           </List.Item>
         )}

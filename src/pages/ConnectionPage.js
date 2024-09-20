@@ -84,7 +84,7 @@ const ConnectionPage = () => {
 
   const handleRemove = (connectionId, connectedUserId) => {
     axios
-      .delete(`http://localhost:5050/connection/${connectionId}/remove`, {
+      .delete(`http://localhost:5050/connection/${userId}/remove`, {
         data: { userID1: connectedUserId },
       })
       .then(() => {
@@ -202,7 +202,9 @@ const ConnectionPage = () => {
                     title={
                       <Button
                         type="link"
-                        onClick={() => navigate(`/profilePage/${item.userID1}`)}
+                        onClick={() =>
+                          navigate(`/profilePage/${item.connectedUser.userId}`)
+                        }
                       >
                         {item.connectedUser
                           ? `${item.connectedUser.FirstName} ${item.connectedUser.LastName}`

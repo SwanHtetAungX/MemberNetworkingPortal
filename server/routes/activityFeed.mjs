@@ -133,6 +133,7 @@ router.patch("/:postId/approve", async (req, res) => {
     const query = { _id: new ObjectId(req.params.postId) };
     const update = { $set: { status: "Approved" }, $unset: { reports: "" } };
     let result = await collection.updateOne(query, update);
+    console.log(req.body);
 
     // Create notification for the recipient
     let notification = {
@@ -266,6 +267,7 @@ router.post("/:authorId", upload.single("media"), async (req, res) => {
     timestamp: new Date().toISOString(),
     likes: [],
     comments: [],
+    allowComments: req.body.allowComments === "true",
   };
 
   try {

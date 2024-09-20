@@ -264,6 +264,7 @@ const ProfilePage = () => {
         profileData={profileData}
         removeModalOpen={removeModalOpen}
         setRemoveModalOpen={setRemoveModalOpen}
+        setProfileData={setProfileData}
         token={token}
       />
 
@@ -283,6 +284,7 @@ const ProfilePage = () => {
         modalContext={modalContext}
         addModalOpen={addModalOpen}
         setAddModalOpen={setAddModalOpen}
+        setProfileData={setProfileData}
         profileData={profileData}
         token={token}
       />

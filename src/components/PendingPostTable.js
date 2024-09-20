@@ -68,12 +68,16 @@ const PendingPostsTable = () => {
         `http://localhost:5050/posts/${id}/approve`,
         {
           method: "PATCH",
+          headers: {
+            "Content-Type": "application/json", // Ensure correct content type
+          },
           body: JSON.stringify({ authorId, authorEmail }),
         }
       );
       if (!response.ok) {
         throw new Error("Failed to approve post");
       }
+      console.log(authorId);
       message.success("Post approved.");
       setPendingPosts(pendingPosts.filter((post) => post._id !== id));
     } catch (error) {
