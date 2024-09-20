@@ -42,6 +42,7 @@ const AdminLogin = () => {
 
       // Redirect to view members page
       navigate("/view-member");
+      sessionStorage.setItem('admin',result.token)
     } catch (err) {
       setError(err.message);
     }
